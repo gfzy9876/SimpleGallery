@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="pers.zy.gallarylib">
+
+    <application>
+        <activity android:name=".gallery.GalleryActivity" />
+        <activity android:name=".gallery.MediaDetailsActivity"
+            android:theme="@style/GalleryStyle"/>
+    </application>
+
+</manifest>
