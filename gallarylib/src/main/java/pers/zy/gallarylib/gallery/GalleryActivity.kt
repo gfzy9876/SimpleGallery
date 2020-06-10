@@ -4,17 +4,17 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
-import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.drakeet.multitype.MultiTypeAdapter
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ActivityGallaryBinding
-import pers.zy.gallerymodel.gallery.model.MediaImageInfo
+import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
+import pers.zy.gallarylib.gallery.commons.ui.EndlessRecyclerViewScrollListener
+import pers.zy.gallarylib.gallery.model.MediaImageInfo
 import java.lang.RuntimeException
-import java.lang.ref.WeakReference
 
 class GalleryActivity : AppCompatActivity() {
 
@@ -24,8 +24,7 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var viewBinding: ActivityGallaryBinding
-    private lateinit var mediaHandler: MediaHandler
+    private lateinit var binding: ActivityGallaryBinding
 
     private val mediaList = mutableListOf<Any>()
     private val adapter = MultiTypeAdapter(mediaList)
@@ -33,14 +32,13 @@ class GalleryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.trans_from_bottom_enter_anim, 0)
-        viewBinding = ActivityGallaryBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
-        mediaHandler = MediaHandler(WeakReference(this))
-        initRv()
-        GalleryLoader.getInstance(this).loadImage({
+        binding = ActivityGallaryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        initView()
+        GalleryLoader.getInstance(this).loadImage(0, imageListCall = {
             mediaList.addAll(it)
             adapter.notifyDataSetChanged()
-        }, {
+        }, errorCall = {
             throw RuntimeException(it)
         })
     }
@@ -50,42 +48,29 @@ class GalleryActivity : AppCompatActivity() {
         overridePendingTransition(0, R.anim.trans_from_bottom_exit_anim)
     }
 
-    private fun initRv() {
+    private fun initView() {
+        binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
+            height += getStatsBarHeight()
+        }
+        binding.titleBar.setPadding(0, getStatsBarHeight(), 0, 0)
+        binding.titleBar.setIconClickListener(View.OnClickListener { finish() })
+
         this@GalleryActivity.adapter.register(MediaImageInfo::class, MediaImageViewBinder())
-        viewBinding.rvGallery.apply {
+        binding.rvGallery.apply {
             adapter = this@GalleryActivity.adapter
-            layoutManager = GridLayoutManager(this@GalleryActivity, 4)
-        }
-    }
-
-    private fun handleMedia(list: List<*>) {
-        for (mediaInfo in list) {
-            mediaInfo?.let { mediaInfo ->
-                mediaList.add(mediaInfo)
-            }
-        }
-
-        d("thread: ${Thread.currentThread().name}, size: ${mediaList.size}")
-        adapter.notifyDataSetChanged()
-    }
-
-    private class MediaHandler(private val activityReference: WeakReference<GalleryActivity>)
-        : Handler(Looper.getMainLooper()) {
-
-        companion object {
-            const val MSG_OBTAIN_MEDIA = 0x01
-        }
-
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                MSG_OBTAIN_MEDIA -> {
-                    activityReference.get()?.handleMedia(msg.obj as List<*>)
+            val gridLayoutManager = GridLayoutManager(this@GalleryActivity, 3)
+            layoutManager = gridLayoutManager
+            addOnScrollListener(object : EndlessRecyclerViewScrollListener(gridLayoutManager) {
+                override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                    GalleryLoader.getInstance(this@GalleryActivity).loadImage(page, imageListCall = {
+                        val orgSize = mediaList.size
+                        mediaList.addAll(it)
+                        this@GalleryActivity.adapter.notifyItemRangeInserted(orgSize, mediaList.size - orgSize)
+                    }, errorCall = {
+                        throw RuntimeException(it)
+                    })
                 }
-            }
+            })
         }
     }
-}
-
-fun d(msg: String) {
-    Log.d("ZZZ", msg)
 }

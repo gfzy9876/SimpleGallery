@@ -1,4 +1,4 @@
-package pers.zy.gallerymodel.gallery.model
+package pers.zy.gallarylib.gallery.model
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -10,7 +10,8 @@ import android.os.Parcelable
  **/
 
 data class MediaImageInfo(
-    var path: String,
+    var realPath: String,
+    var contentUriPath: String,
     var mimeType: String,
     var width: Int,
     var height: Int,
@@ -18,16 +19,18 @@ data class MediaImageInfo(
     var displayName: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString(),
-        parcel.readString(),
+        parcel.readString()!!,
+        parcel.readString()!!,
+        parcel.readString()!!,
         parcel.readInt(),
         parcel.readInt(),
         parcel.readLong(),
-        parcel.readString()
+        parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(path)
+        parcel.writeString(realPath)
+        parcel.writeString(contentUriPath)
         parcel.writeString(mimeType)
         parcel.writeInt(width)
         parcel.writeInt(height)

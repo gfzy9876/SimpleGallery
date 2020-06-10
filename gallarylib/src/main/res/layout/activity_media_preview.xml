@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context="pers.zy.gallarylib.gallery.GalleryActivity">
+    tools:context=".gallery.MediaPreviewActivity">
 
     <pers.zy.gallarylib.gallery.commons.ui.TitleBarLayout
         android:id="@+id/title_bar"
@@ -18,8 +18,8 @@
         app:leftIconRes="@drawable/back"
         app:iconTint="@color/color_white" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_gallery"
+    <ImageView
+        android:id="@+id/iv_media_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

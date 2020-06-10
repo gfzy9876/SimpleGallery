@@ -3,7 +3,8 @@ package pers.zy.gallarylib.gallery
 import android.content.Context
 import android.provider.MediaStore
 import kotlinx.coroutines.*
-import pers.zy.gallerymodel.gallery.model.MediaImageInfo
+import pers.zy.gallarylib.gallery.commons.d
+import pers.zy.gallarylib.gallery.model.MediaImageInfo
 import java.lang.ref.WeakReference
 
 /**
@@ -46,9 +47,9 @@ class GalleryLoader(private val contextReference: WeakReference<Context>) : Coro
         private val IMAGE_SELECTION_ARGS = arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString())
     }
 
-    fun loadImage(imageListCall: (List<MediaImageInfo>) -> Unit, errorCall: (Throwable) -> Unit) {
+    fun loadImage(page: Int = 0, perPage: Int = 100, imageListCall: (List<MediaImageInfo>) -> Unit, errorCall: (Throwable) -> Unit) {
         launch(coroutineContext + CoroutineExceptionHandler { _, throwable -> errorCall.invoke(throwable) }) {
-            val async = async(coroutineContext + Dispatchers.IO) {
+            val async = async(coroutineContext + Dispatchers.Unconfined) {
                 val resultList = mutableListOf<MediaImageInfo>()
                 val context = contextReference.get() ?: return@async resultList
                 val cursor = context.contentResolver.query(
@@ -56,7 +57,7 @@ class GalleryLoader(private val contextReference: WeakReference<Context>) : Coro
                     IMAGE_PROJECTION,
                     IMAGE_SELECTION,
                     IMAGE_SELECTION_ARGS,
-                    IMAGE_SORT
+                    "$IMAGE_SORT LIMIT ${page * perPage}, $perPage"
                 )
                 cursor?.let { c ->
                     if (!c.moveToFirst()) {
@@ -65,6 +66,7 @@ class GalleryLoader(private val contextReference: WeakReference<Context>) : Coro
                     do {
                         val id = c.getLong(c.getColumnIndex(MediaStore.Files.FileColumns._ID))
                         val path = c.getString(c.getColumnIndex(MediaStore.Images.Media.DATA))
+                        val contentUriPath = QUERY_URL.buildUpon().appendPath(id.toString()).build().toString()
                         val mimeType = c.getString(c.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
                         val width = c.getInt(c.getColumnIndex(MediaStore.Images.Media.WIDTH))
                         val height = c.getInt(c.getColumnIndex(MediaStore.Images.Media.HEIGHT))
@@ -72,7 +74,9 @@ class GalleryLoader(private val contextReference: WeakReference<Context>) : Coro
                         val bucketDisplayName = c.getString(c.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
                         val displayName = c.getString(c.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
                         val bucketId = c.getString(c.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
-                        resultList.add(MediaImageInfo(path, mimeType, width, height, size, displayName))
+                        resultList.add(MediaImageInfo(path, contentUriPath, mimeType, width, height, size, displayName))
+                        d("loadImage, path: ${path}")
+//                        d("mime-type: ${mimeType}")
                     } while (c.moveToNext())
                 }
                 cursor?.close()

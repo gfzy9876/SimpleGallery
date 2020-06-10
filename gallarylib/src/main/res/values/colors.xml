@@ -8,6 +8,9 @@
     <color name="color_black">#000000</color>
     <color name="color_white">#FFFFFF</color>
     <color name="color_F5">#F5F5F5</color>
+    <color name="color_88">#888888</color>
     <color name="color_33">#333333</color>
     <color name="color_66">#666666</color>
+    <color name="color_ED">#EDEDED</color>
+    <color name="color_D5">#D5D5D5</color>
 </resources>
