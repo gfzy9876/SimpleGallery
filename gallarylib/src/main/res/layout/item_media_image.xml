@@ -6,11 +6,25 @@
     android:padding="2dp"
     android:background="#33000000">
 
-    <pers.zy.gallarylib.gallery.commons.ui.SquareImage
+    <pers.zy.gallarylib.gallery.ui.view.SquareImage
         android:id="@+id/iv_media_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/tv_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/color_white"
+        android:gravity="center"
+        android:shadowDx="1"
+        android:shadowDy="2"
+        android:shadowRadius="2"
+        android:shadowColor="@color/color_black"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"/>
 
     <TextView
         android:id="@+id/tv_media_image"

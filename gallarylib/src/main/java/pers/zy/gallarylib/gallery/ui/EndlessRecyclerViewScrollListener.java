@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery.commons.ui;
+package pers.zy.gallarylib.gallery.ui;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -71,7 +71,7 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
         }
 
         // If the total item count is zero and the previous isn't, assume the
-        // list is invalidated and should be reset back to initial state
+        // list is invalidated and should be reset arrow_left to initial state
         if (totalItemCount < previousTotalItemCount) {
             this.currentPage = this.startingPageIndex;
             this.previousTotalItemCount = totalItemCount;

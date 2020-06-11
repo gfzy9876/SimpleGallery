@@ -1,8 +1,6 @@
 package pers.zy.gallarylib.gallery.commons
 
 import android.os.Build
-import android.util.Log
-import pers.zy.gallarylib.BuildConfig
 import pers.zy.gallarylib.gallery.GalleryApp
 
 /**
@@ -20,14 +18,6 @@ fun getStatsBarHeight(): Int {
     return height
 }
 
-fun lessThanQ(): Boolean {
-    return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-}
+fun getScreenHeight(): Int = GalleryApp.INSTANCE.resources.displayMetrics.heightPixels
 
-fun d(msg: String) {
-    Log.d("ZZZ", msg)
-}
-
-fun e(msg: String) {
-    Log.e("ZZZ", msg)
-}
+fun belowAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q

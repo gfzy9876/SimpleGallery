@@ -3,7 +3,7 @@ package pers.zy.gallerymodel
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import pers.zy.gallarylib.gallery.GalleryActivity
+import pers.zy.gallarylib.gallery.ui.GalleryMediaActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -11,7 +11,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
-    fun openGallery(view: View) {
-        GalleryActivity.start(this)
+    fun loadImage(view: View) {
+        GalleryMediaActivity.startShowImage(this)
+    }
+
+    fun loadVideo(view: View) {
+
     }
 }

@@ -5,22 +5,82 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="pers.zy.gallarylib.gallery.GalleryActivity">
+    android:background="@color/color_33"
+    tools:context="pers.zy.gallarylib.gallery.ui.GalleryMediaActivity">
 
-    <pers.zy.gallarylib.gallery.commons.ui.TitleBarLayout
+    <pers.zy.gallarylib.gallery.ui.view.TitleBarLayout
         android:id="@+id/title_bar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@color/colorPrimary"
-        app:titleText="相册"
-        app:titleTextColor="@color/color_white"
-        app:titleTextSize="20sp"
-        app:leftIconRes="@drawable/back"
-        app:iconTint="@color/color_white" />
+        android:background="@color/color_33" >
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_gallery"
+        <LinearLayout
+            android:id="@+id/ll_bucket_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:background="@drawable/shape_rc_4c_corner100"
+            android:layout_marginLeft="20dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="5dp">
+
+            <TextView
+                android:id="@+id/tv_bucket_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="17sp"
+                android:textColor="@color/color_white"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="所有图片"/>
+
+            <FrameLayout
+                android:id="@+id/fl_bucket_arrow"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/shape_rc_b2_corner100"
+                android:layout_marginLeft="5dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/arrow_bottom"
+                    android:tint="@color/color_2A"/>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </pers.zy.gallarylib.gallery.ui.view.TitleBarLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_media"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/fl_bucket"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:clickable="true"
+            android:visibility="invisible">
+
+            <pers.zy.gallarylib.gallery.ui.view.MaxHeightRecyclerView
+                android:id="@+id/rv_bucket"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:maxRecyclerHeight="500dp"/>
+
+        </FrameLayout>
+    </FrameLayout>
 
 </LinearLayout>

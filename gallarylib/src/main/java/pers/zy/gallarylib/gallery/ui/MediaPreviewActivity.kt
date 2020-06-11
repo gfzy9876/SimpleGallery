@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery
+package pers.zy.gallarylib.gallery.ui
 
 import android.content.Context
 import android.content.Intent
@@ -31,10 +31,10 @@ class MediaPreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMediaPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        mediaImageInfo = intent.getParcelableExtra(EXTRA_MEDIA_INFO)
+        mediaImageInfo = intent.getParcelableExtra(EXTRA_MEDIA_INFO)!!
         initTitleBar()
         Glide.with(this)
-            .load(mediaImageInfo.realPath)
+            .load(mediaImageInfo.contentUriPath)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .into(binding.ivMediaImage)
     }

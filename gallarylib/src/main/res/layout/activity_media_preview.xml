@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context=".gallery.MediaPreviewActivity">
+    android:background="@color/color_F5"
+    tools:context=".gallery.ui.MediaPreviewActivity">
 
-    <pers.zy.gallarylib.gallery.commons.ui.TitleBarLayout
+    <pers.zy.gallarylib.gallery.ui.view.TitleBarLayout
         android:id="@+id/title_bar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -15,7 +16,7 @@
         app:titleText="相册"
         app:titleTextColor="@color/color_white"
         app:titleTextSize="20sp"
-        app:leftIconRes="@drawable/back"
+        app:leftIconRes="@drawable/arrow_left"
         app:iconTint="@color/color_white" />
 
     <ImageView

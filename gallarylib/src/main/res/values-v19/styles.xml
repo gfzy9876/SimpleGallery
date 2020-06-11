@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="GalleryStyle" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/color_transparent</item>
-    </style>
-
-    <style name="GalleryStyle.TransStyle">
-        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
 </resources>

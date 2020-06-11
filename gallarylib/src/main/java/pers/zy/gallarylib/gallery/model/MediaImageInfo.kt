@@ -8,34 +8,35 @@ import android.os.Parcelable
  * author zy
  * Have a nice day :)
  **/
-
-data class MediaImageInfo(
-    var realPath: String,
-    var contentUriPath: String,
-    var mimeType: String,
+class MediaImageInfo(
+    realPath: String,
+    contentUriPath: String,
+    mimeType: String,
+    size: Long,
+    displayName: String,
     var width: Int,
-    var height: Int,
-    var size: Long,
-    var displayName: String
-) : Parcelable {
+    var height: Int
+) : BaseMediaInfo(
+    realPath,
+    contentUriPath,
+    mimeType,
+    size,
+    displayName
+) {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readInt(),
         parcel.readLong(),
-        parcel.readString()!!
+        parcel.readString()!!,
+        parcel.readInt(),
+        parcel.readInt()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(realPath)
-        parcel.writeString(contentUriPath)
-        parcel.writeString(mimeType)
+        super.writeToParcel(parcel, flags)
         parcel.writeInt(width)
         parcel.writeInt(height)
-        parcel.writeLong(size)
-        parcel.writeString(displayName)
     }
 
     override fun describeContents(): Int {
@@ -51,14 +52,9 @@ data class MediaImageInfo(
             return arrayOfNulls(size)
         }
     }
-}
 
-data class MediaVideoInfo(
-    var path: String,
-    var size: Int?,
-    var title: String,
-    var mimeType: Int,
-    var width: Int?,
-    var height: Int?,
-    var thumbPath: String?
-)
+    override fun toString(): String {
+        return "MediaImageInfo(${super.toString()} width=$width, height=$height)"
+    }
+
+}

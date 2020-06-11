@@ -8,4 +8,8 @@
         <attr name="titleTextSize" format="dimension"/>
         <attr name="titleTextColor" format="color|reference"/>
     </declare-styleable>
+
+    <declare-styleable name="MaxHeightRecyclerView">
+        <attr name="maxRecyclerHeight" format="dimension"/>
+    </declare-styleable>
 </resources>

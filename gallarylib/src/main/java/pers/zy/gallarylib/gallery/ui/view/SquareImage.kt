@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery.commons.ui
+package pers.zy.gallarylib.gallery.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
