@@ -2,7 +2,6 @@ package pers.zy.gallarylib.gallery.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import pers.zy.gallarylib.gallery.commons.d
 
 /**
  * date: 2020/6/11   time: 2:15 PM
@@ -14,7 +13,9 @@ abstract class BaseMediaInfo(
     var contentUriPath: String,
     var mimeType: String,
     var size: Long,
-    var displayName: String
+    var displayName: String,
+    var width: Long,
+    var height: Long
 ) : Parcelable {
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(realPath)
@@ -22,11 +23,12 @@ abstract class BaseMediaInfo(
         parcel.writeString(mimeType)
         parcel.writeLong(size)
         parcel.writeString(displayName)
+        parcel.writeLong(width)
+        parcel.writeLong(height)
     }
 
     override fun toString(): String {
         return "BaseMediaInfo(realPath='$realPath', contentUriPath='$contentUriPath', mimeType='$mimeType', size=$size, displayName='$displayName')"
     }
-
 
 }

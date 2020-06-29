@@ -16,6 +16,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadVideo(view: View) {
-
+        GalleryMediaActivity.startShowVideo(this)
     }
 }

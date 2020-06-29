@@ -5,12 +5,10 @@
     <application android:name=".gallery.GalleryApp">
         <activity
             android:name=".gallery.ui.GalleryMediaActivity"
-            android:theme="@style/GalleryStyle.TransStyle"
-            android:screenOrientation="portrait" />
+            android:theme="@style/GalleryStyle.TransStyle" />
         <activity
             android:name=".gallery.ui.MediaPreviewActivity"
-            android:theme="@style/GalleryStyle"
-            android:screenOrientation="portrait" />
+            android:theme="@style/GalleryStyle" />
     </application>
 
 </manifest>

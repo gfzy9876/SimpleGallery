@@ -14,14 +14,16 @@ class MediaImageInfo(
     mimeType: String,
     size: Long,
     displayName: String,
-    var width: Int,
-    var height: Int
+    width: Long,
+    height: Long
 ) : BaseMediaInfo(
     realPath,
     contentUriPath,
     mimeType,
     size,
-    displayName
+    displayName,
+    width,
+    height
 ) {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
@@ -29,14 +31,12 @@ class MediaImageInfo(
         parcel.readString()!!,
         parcel.readLong(),
         parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readInt()
+        parcel.readLong(),
+        parcel.readLong()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         super.writeToParcel(parcel, flags)
-        parcel.writeInt(width)
-        parcel.writeInt(height)
     }
 
     override fun describeContents(): Int {

@@ -9,6 +9,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.drakeet.multitype.ItemViewBinder
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ItemMediaImageBinding
+import pers.zy.gallarylib.gallery.commons.dp
+import pers.zy.gallarylib.gallery.commons.dpF
 import pers.zy.gallarylib.gallery.commons.e
 import pers.zy.gallarylib.gallery.model.MediaImageInfo
 import java.io.File
@@ -29,14 +31,13 @@ class MediaImageBinder : ItemViewBinder<MediaImageInfo, MediaImageBinder.ViewHol
 
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
-        Glide.with(holder.itemView).clear(holder.binding.ivMediaImage)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, item: MediaImageInfo) {
         holder.info = item
         Glide.with(holder.itemView)
             .load(item.contentUriPath)
-            .override(100, 100)
+            .override(100f.dp)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .placeholder(R.drawable.place_holder)
             .into(holder.binding.ivMediaImage)

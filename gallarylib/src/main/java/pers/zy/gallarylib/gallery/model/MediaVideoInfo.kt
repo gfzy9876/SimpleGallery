@@ -14,16 +14,18 @@ class MediaVideoInfo(
     mimeType: String,
     size: Long,
     displayName: String,
-    var width: Int,
-    var height: Int,
-    var thumbnailPath: String,
+    width: Long,
+    height: Long,
+    var thumbnailPath: String?,
     var duration: Long
 ) : BaseMediaInfo(
     realPath,
     contentUriPath,
     mimeType,
     size,
-    displayName
+    displayName,
+    width,
+    height
 ) {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
@@ -31,16 +33,14 @@ class MediaVideoInfo(
         parcel.readString()!!,
         parcel.readLong(),
         parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString()!!,
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readString(),
         parcel.readLong()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         super.writeToParcel(parcel, flags)
-        parcel.writeInt(width)
-        parcel.writeInt(height)
         parcel.writeString(thumbnailPath)
         parcel.writeLong(duration)
     }

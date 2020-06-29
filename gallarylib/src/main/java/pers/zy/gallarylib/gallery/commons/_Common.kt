@@ -1,6 +1,7 @@
 package pers.zy.gallarylib.gallery.commons
 
 import android.os.Build
+import android.util.TypedValue
 import pers.zy.gallarylib.gallery.GalleryApp
 
 /**
@@ -21,3 +22,13 @@ fun getStatsBarHeight(): Int {
 fun getScreenHeight(): Int = GalleryApp.INSTANCE.resources.displayMetrics.heightPixels
 
 fun belowAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+
+val Float.dp: Int
+    get() {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryApp.INSTANCE.resources.displayMetrics).toInt()
+    }
+
+val Float.dpF: Float
+    get() {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryApp.INSTANCE.resources.displayMetrics)
+    }

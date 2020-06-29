@@ -19,10 +19,13 @@ import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ActivityGallaryBinding
 import pers.zy.gallarylib.gallery.commons.getScreenHeight
 import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
+import pers.zy.gallarylib.gallery.loader.BaseGalleryMediaLoader
 import pers.zy.gallarylib.gallery.loader.GalleryImageLoader
+import pers.zy.gallarylib.gallery.loader.GalleryVideoLoader
 import pers.zy.gallarylib.gallery.model.BaseMediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 import pers.zy.gallarylib.gallery.model.MediaImageInfo
+import pers.zy.gallarylib.gallery.model.MediaVideoInfo
 import java.lang.RuntimeException
 
 class GalleryMediaActivity : AppCompatActivity() {
@@ -35,24 +38,19 @@ class GalleryMediaActivity : AppCompatActivity() {
 
         fun startShowImage(context: Context) {
             context.startActivity(Intent(context, GalleryMediaActivity::class.java).apply {
-                putExtra(
-                    EXTRA_MIME_TYPE,
-                    MIME_TYPE_IMAGE
-                )
+                putExtra(EXTRA_MIME_TYPE, MIME_TYPE_IMAGE)
             })
         }
 
         fun startShowVideo(context: Context) {
             context.startActivity(Intent(context, GalleryMediaActivity::class.java).apply {
-                putExtra(
-                    EXTRA_MIME_TYPE,
-                    MIME_TYPE_VIDEO
-                )
+                putExtra(EXTRA_MIME_TYPE, MIME_TYPE_VIDEO)
             })
         }
     }
 
     private lateinit var imageLoader: GalleryImageLoader
+    private lateinit var videoLoader: GalleryVideoLoader
     private lateinit var binding: ActivityGallaryBinding
 
     private val mediaList = mutableListOf<BaseMediaInfo>()
@@ -85,28 +83,7 @@ class GalleryMediaActivity : AppCompatActivity() {
         binding = ActivityGallaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initView()
-        imageLoader = GalleryImageLoader(this, this)
-        when (intent.getIntExtra(EXTRA_MIME_TYPE, -1)) {
-            MIME_TYPE_IMAGE -> {
-                imageLoader.loadMedia(mediaListCall = {
-                    refreshMedia(it)
-                }, errorCall = {
-                    throw RuntimeException(it)
-                })
-                imageLoader.loadBucket({
-                    bucketList.addAll(it)
-                    bucketAdapter.notifyDataSetChanged()
-                }, {
-                    throw RuntimeException(it)
-                })
-            }
-            MIME_TYPE_VIDEO -> {
-
-            }
-            MIME_TYPE_ALL -> {
-
-            }
-        }
+        initMediaLoader()
     }
 
     override fun finish() {
@@ -129,6 +106,7 @@ class GalleryMediaActivity : AppCompatActivity() {
         binding.titleBar.setIconClickListener(View.OnClickListener { finish() })
 
         mediaAdapter.register(MediaImageInfo::class, MediaImageBinder())
+        mediaAdapter.register(MediaVideoInfo::class, MediaVideoBinder())
         binding.rvMedia.apply {
             adapter = this@GalleryMediaActivity.mediaAdapter
             val gridLayoutManager = GridLayoutManager(this@GalleryMediaActivity, 4)
@@ -169,6 +147,34 @@ class GalleryMediaActivity : AppCompatActivity() {
         binding.rvBucket.maxRecyclerViewHeight = (getScreenHeight() * 0.5f).toInt()
     }
 
+    private fun initMediaLoader() {
+        imageLoader = GalleryImageLoader(this)
+        videoLoader = GalleryVideoLoader(this)
+        getGalleryMediaLoader()?.loadMedia(mediaListCall = {
+            refreshMedia(it)
+        })
+        getGalleryMediaLoader()?.loadBucket({
+            bucketList.addAll(it)
+            bucketAdapter.notifyDataSetChanged()
+        }, {
+            throw RuntimeException(it)
+        })
+    }
+
+    private fun getGalleryMediaLoader(): BaseGalleryMediaLoader? {
+        return when (intent.getIntExtra(EXTRA_MIME_TYPE, -1)) {
+            MIME_TYPE_IMAGE -> {
+                imageLoader
+            }
+            MIME_TYPE_VIDEO -> {
+                videoLoader
+            }
+            else -> {
+                null
+            }
+        }
+    }
+
     private fun refreshBucketSelectorState(show: Boolean) {
         if (binding.llBucketSelector.tag != show) {
             binding.llBucketSelector.tag = show
@@ -184,12 +190,12 @@ class GalleryMediaActivity : AppCompatActivity() {
 
     private fun requestMediaWithBucketId(bucketInfo: BucketInfo) {
         binding.tvBucketSelector.text = bucketInfo.displayName
-        imageLoader.selectBucketId = bucketInfo.id
-        imageLoader.loadMedia(mediaListCall = {
-            refreshMedia(it)
-        }, errorCall = {
-            throw RuntimeException(it)
-        })
+        getGalleryMediaLoader()?.apply {
+            selectBucketId = bucketInfo.id
+            loadMedia(mediaListCall = {
+                refreshMedia(it)
+            })
+        }
     }
 
     private fun refreshMedia(result: List<BaseMediaInfo>) {
@@ -199,12 +205,10 @@ class GalleryMediaActivity : AppCompatActivity() {
     }
 
     private fun loadMoreMedia(page: Int) {
-        imageLoader.loadMedia(page, mediaListCall = {
+        getGalleryMediaLoader()?.loadMedia(page, mediaListCall = {
             val orgSize = mediaList.size
             mediaList.addAll(it)
             mediaAdapter.notifyItemRangeInserted(orgSize, mediaList.size - orgSize)
-        }, errorCall = {
-            throw RuntimeException(it)
         })
     }
 }

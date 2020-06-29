@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import pers.zy.gallarylib.gallery.commons.belowAndroidQ
 import pers.zy.gallarylib.gallery.model.BaseMediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
+import java.lang.Exception
 import java.lang.ref.WeakReference
 
 /**
@@ -20,31 +21,39 @@ import java.lang.ref.WeakReference
  * author zy
  * Have a nice day :)
  **/
-abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by MainScope(), LifecycleObserver {
+abstract class BaseGalleryMediaLoader (context: Context) : CoroutineScope by MainScope(), LifecycleObserver {
 
     companion object {
         const val BUCKET_ID_NO_SELECT = -1L
-        val QUERY_URL = MediaStore.Files.getContentUri("external")
-        const val DEFAULT_IMAGE_SORT = "${MediaStore.Files.FileColumns._ID} DESC"
-        val BUCKET_DISPLAY_NAME = if (belowAndroidQ()) {
-            "bucket_display_name"
-        } else {
-            MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME
-        }
-        val BUCKET_ID = if (belowAndroidQ()) {
-            "bucket_id"
-        } else {
-            MediaStore.Files.FileColumns.BUCKET_ID
-        }
+        val QUERY_URL: Uri = MediaStore.Files.getContentUri("external")
+
+        const val DEFAULT_SORT = "${MediaStore.Files.FileColumns._ID} DESC"
+
+        /**
+         * MediaColumnName
+         * */
+        const val COLUMN_ID = MediaStore.Files.FileColumns._ID  //文件id
+        const val COLUMN_DATA = MediaStore.Files.FileColumns.DATA  //文件绝对路径
+        const val COLUMN_MEDIA_TYPE = MediaStore.Files.FileColumns.MEDIA_TYPE
+        const val COLUMN_MIME_TYPE = MediaStore.Files.FileColumns.MIME_TYPE
+        const val COLUMN_WIDTH = MediaStore.Files.FileColumns.WIDTH //宽
+        const val COLUMN_HEIGHT = MediaStore.Files.FileColumns.HEIGHT //高
+        const val COLUMN_SIZE = MediaStore.Files.FileColumns.SIZE //大小
+        const val COLUMN_BUCKET_DISPLAY_NAME = "bucket_display_name" //当前所在文件夹名
+        const val COLUMN_DISPLAY_NAME = MediaStore.Files.FileColumns.DISPLAY_NAME //文件名
+        const val COLUMN_BUCKET_ID = "bucket_id" //当前所在文件夹id
+        const val COLUMN_DURATION = "duration" //时间
+        const val COLUMN_THUMB_DATA = MediaStore.Video.Thumbnails.DATA //缩略图绝对路径
     }
 
-    protected val contextReference: WeakReference<Context> = WeakReference(context)
+    private val contextReference: WeakReference<Context> = WeakReference(context)
     var selectBucketId: Long = BUCKET_ID_NO_SELECT
 
     init {
         if (context !is LifecycleOwner) {
             throw RuntimeException("context: $context is not LifecycleOwner")
         }
+        context.lifecycle.addObserver(this)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
@@ -61,16 +70,24 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
      * @param errorCall
      * */
     fun loadMedia(
+        mediaType: MediaType,
         @IntRange(from = 0) page: Int = 0,
         perPage: Int = 100,
-        mediaListCall: (List<BaseMediaInfo>) -> Unit, errorCall: (Throwable) -> Unit
+        mediaListCall: (List<BaseMediaInfo>) -> Unit,
+        errorCall: ((Throwable) -> Unit)? = null
     ) {
-        launch(coroutineContext + CoroutineExceptionHandler { _, throwable -> errorCall.invoke(throwable) }) {
+        launch(coroutineContext + CoroutineExceptionHandler { _, throwable ->
+            if (errorCall != null) {
+                errorCall.invoke(throwable)
+            } else {
+                throw RuntimeException("media获取异常: $throwable")
+            }
+        }) {
             val async: Deferred<MutableList<BaseMediaInfo>> = async(coroutineContext + Dispatchers.IO) {
                 val resultList = mutableListOf<BaseMediaInfo>()
                 val context = contextReference.get() ?: return@async resultList
                 val cursor = context.contentResolver.query(
-                    QUERY_URL,
+                    MediaStore.Files.getContentUri("external"),
                     getMediaProjection(),
                     getMediaSelection(),
                     getMediaSelectionArgs(),
@@ -79,7 +96,7 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
                 cursor?.let { c ->
                     if (!c.moveToFirst()) return@let
                     do {
-                        val mediaInfo = createMediaInfo(c)
+                        val mediaInfo = createMediaInfo(c, context)
                         resultList.add(mediaInfo)
                     } while (c.moveToNext())
                     c.close()
@@ -92,48 +109,69 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
         }
     }
 
-    protected abstract fun getMediaProjection(): Array<String>
+    /**
+     * 获取file投射的列信息: MediaStore.Files.FileColumns._ID, MediaStore.MediaColumns.MIME_TYPE.....
+     * */
+    private fun getMediaProjection(): Array<String> = arrayOf(
+        COLUMN_ID,
+        COLUMN_DATA,
+        COLUMN_MIME_TYPE,
+        COLUMN_WIDTH,
+        COLUMN_HEIGHT,
+        COLUMN_SIZE,
+        COLUMN_DISPLAY_NAME,
+        COLUMN_DURATION
+    )
 
+    /**
+     * 筛选条件(SQL)
+     * */
     protected abstract fun getMediaSelection(): String
 
-    protected abstract fun getMediaSelectionArgs(): Array<String>
+    /**
+     * 筛选条件value，对应筛选条件中 '=?'
+     * */
+    protected abstract fun getMediaSelectionArgs(): Array<String>?
 
-    protected abstract fun getMediaSortOrder(page: Int, perPage: Int): String
+    /**
+     * 排序规则(SQL)
+     * */
+    protected abstract fun getMediaSortOrder(@IntRange(from = 0) page: Int, perPage: Int): String
 
-    protected abstract fun createMediaInfo(c: Cursor): BaseMediaInfo
+    protected abstract fun createMediaInfo(c: Cursor, context: Context): BaseMediaInfo
 
     protected fun createContentPathUri(id: Long): Uri = QUERY_URL.buildUpon().appendPath(id.toString()).build()
 
-
-    /*获取Bucket List*/
-
+    /**
+     * 获取Bucket List
+     * */
     private fun getBucketSelection(): String = if (belowAndroidQ()) {
         "${MediaStore.Files.FileColumns.MEDIA_TYPE}=?" +
-                " AND ${MediaStore.Files.FileColumns.MIME_TYPE}!='image/gif'" +
-                " AND ${MediaStore.Files.FileColumns.SIZE}>0" + ")" +
-                " GROUP BY (${BUCKET_ID}"
+                " AND ${COLUMN_MIME_TYPE}!='image/gif'" +
+                " AND ${COLUMN_SIZE}>0" + ")" +
+                " GROUP BY (${COLUMN_BUCKET_ID}"
     } else {
         "${MediaStore.Files.FileColumns.MEDIA_TYPE}=?" +
-                " AND ${MediaStore.Files.FileColumns.MIME_TYPE}!='image/gif'" +
-                " AND ${MediaStore.Files.FileColumns.SIZE}>0"
+                " AND ${COLUMN_MIME_TYPE}!='image/gif'" +
+                " AND ${COLUMN_SIZE}>0"
     }
 
     private fun getBucketProjection(): Array<String> = if (belowAndroidQ()) {
         arrayOf(
-            MediaStore.Files.FileColumns._ID,
-            MediaStore.MediaColumns.DATA,
-            BUCKET_ID,
-            BUCKET_DISPLAY_NAME,
-            MediaStore.MediaColumns.MIME_TYPE,
+            COLUMN_ID,
+            COLUMN_DATA,
+            COLUMN_BUCKET_ID,
+            COLUMN_BUCKET_DISPLAY_NAME,
+            COLUMN_MIME_TYPE,
             "COUNT(*) AS count"
         )
     } else {
         arrayOf(
-            MediaStore.Files.FileColumns._ID,
-            MediaStore.MediaColumns.DATA,
-            BUCKET_ID,
-            BUCKET_DISPLAY_NAME,
-            MediaStore.MediaColumns.MIME_TYPE
+            COLUMN_ID,
+            COLUMN_DATA,
+            COLUMN_BUCKET_ID,
+            COLUMN_BUCKET_DISPLAY_NAME,
+            COLUMN_MIME_TYPE
         )
     }
 
@@ -147,7 +185,7 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
                     getBucketProjection(),
                     getBucketSelection(),
                     getMediaSelectionArgs(),
-                    DEFAULT_IMAGE_SORT
+                    DEFAULT_SORT
                 )
                 cursor?.let { c ->
                     if (belowAndroidQ()) {
@@ -169,7 +207,7 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
             val subBucketInfo = createSumBucket(c)
             resultList.add(subBucketInfo)
             do {
-                val bucketId = c.getLong(c.getColumnIndex(BUCKET_ID))
+                val bucketId = c.getLong(c.getColumnIndex(COLUMN_BUCKET_ID))
                 val bucketInfo = if (bucketIdInfoMap[bucketId] == null) {
                     createBucket(c)
                 } else {
@@ -198,10 +236,10 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
     }
 
     private fun createBucket(c: Cursor): BucketInfo {
-        val bucketId = c.getLong(c.getColumnIndex(BUCKET_ID))
-        val bucketDisplayName = c.getString(c.getColumnIndex(BUCKET_DISPLAY_NAME)) ?: "其他"
-        val path = c.getString(c.getColumnIndex(MediaStore.Files.FileColumns.DATA))
-        val id = c.getLong(c.getColumnIndex(MediaStore.Files.FileColumns._ID))
+        val bucketId = c.getLong(c.getColumnIndex(COLUMN_BUCKET_ID))
+        val bucketDisplayName = c.getString(c.getColumnIndex(COLUMN_BUCKET_DISPLAY_NAME)) ?: "其他"
+        val path = c.getString(c.getColumnIndex(COLUMN_DATA))
+        val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val contentUriPath = createContentPathUri(id).toString()
         return if (belowAndroidQ()) {
             val count = c.getInt(c.getColumnIndex("count"))
@@ -212,8 +250,8 @@ abstract class BaseGalleryMediaLoader<T>(context: Context) : CoroutineScope by M
     }
 
     private fun createSumBucket(c: Cursor): BucketInfo {
-        val sumPreviewId = c.getLong(c.getColumnIndex(MediaStore.Files.FileColumns._ID))
-        val sumPreviewRealPath = c.getString(c.getColumnIndex(MediaStore.Files.FileColumns.DATA))
+        val sumPreviewId = c.getLong(c.getColumnIndex(COLUMN_ID))
+        val sumPreviewRealPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val sumPreviewContentUri = createContentPathUri(sumPreviewId)
         return BucketInfo(BUCKET_ID_NO_SELECT, "所有", 0, sumPreviewRealPath, sumPreviewContentUri.toString())
     }
