@@ -3,6 +3,7 @@ package pers.zy.gallarylib.gallery.engine
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.IntRange
 import androidx.lifecycle.Lifecycle
@@ -10,7 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
-import pers.zy.gallarylib.gallery.commons.belowAndroidQ
+import pers.zy.gallarylib.gallery.commons.lessThanAndroidQ
 import pers.zy.gallarylib.gallery.model.BaseMediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 import pers.zy.gallarylib.gallery.model.MediaImageInfo
@@ -213,7 +214,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
     private fun createMediaInfo(c: Cursor, context: Context): BaseMediaInfo {
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val path = c.getString(c.getColumnIndex(COLUMN_DATA))
-        val contentUriPath = if (belowAndroidQ()) {
+        val contentUriPath = if (lessThanAndroidQ()) {
             path
         } else {
             createContentPathUri(id).toString()
@@ -274,10 +275,10 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
                     DEFAULT_SORT
                 )
                 cursor?.let { c ->
-                    if (belowAndroidQ()) {
-                        initBucketListBelowAndroidQ(c, resultList)
+                    if (lessThanAndroidQ()) {
+                        loadBucketListBelowAndroidQ(c, resultList)
                     } else {
-                        initBucketListAndroidQ(c, resultList)
+                        loadBucketListGreaterThanOrEqualsAndroidQ(c, resultList)
                     }
                 }
                 cursor?.close()
@@ -290,7 +291,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
     /**
      * bucket file 获取需要的列信息
      * */
-    private fun getBucketProjection(): Array<String> = if (belowAndroidQ()) {
+    private fun getBucketProjection(): Array<String> = if (lessThanAndroidQ()) {
         arrayOf(
             COLUMN_ID,
             COLUMN_DATA,
@@ -315,7 +316,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
     private fun getBucketSelection(mimeType: Int): String {
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
-                if (belowAndroidQ()) {
+                if (lessThanAndroidQ()) {
                     "${COLUMN_MEDIA_TYPE}=?" +
                             getGiftLimitSelection() +
                             " AND ${COLUMN_SIZE}>0)" +
@@ -327,7 +328,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
                 }
             }
             MIME_TYPE_VIDEO -> {
-                if (belowAndroidQ()) {
+                if (lessThanAndroidQ()) {
                     "${COLUMN_MEDIA_TYPE}=?" +
                             " AND ${COLUMN_SIZE}>0)" +
                             " GROUP BY (${COLUMN_BUCKET_ID}"
@@ -337,7 +338,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
                 }
             }
             else -> {
-                if (belowAndroidQ()) {
+                if (lessThanAndroidQ()) {
                     "(${COLUMN_MEDIA_TYPE}=?" +
                             getGiftLimitSelection() +
                             " OR ${COLUMN_MEDIA_TYPE}=?)" +
@@ -374,7 +375,10 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
         }
     }
 
-    private fun initBucketListBelowAndroidQ(c: Cursor, resultList: MutableList<BucketInfo>) {
+    /**
+     * <[Build.VERSION_CODES.Q]获取每个bucket count方法
+     * */
+    private fun loadBucketListBelowAndroidQ(c: Cursor, resultList: MutableList<BucketInfo>) {
         if (c.moveToFirst()) {
             val nonSelectiveBucketInfo = createNonSelectiveBucket(c)
             resultList.add(nonSelectiveBucketInfo)
@@ -386,7 +390,10 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
         }
     }
 
-    private fun initBucketListAndroidQ(c: Cursor, resultList: MutableList<BucketInfo>) {
+    /**
+     * >=[Build.VERSION_CODES.Q]获取每个bucket count方法
+     * */
+    private fun loadBucketListGreaterThanOrEqualsAndroidQ(c: Cursor, resultList: MutableList<BucketInfo>) {
         if (c.moveToFirst()) {
             val bucketIdInfoMap = hashMapOf<Long, BucketInfo>()
             val nonSelectiveBucketInfo = createNonSelectiveBucket(c)
@@ -402,7 +409,6 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
                 }
                 bucketInfo.count++
                 nonSelectiveBucketInfo.count++
-//                bucketIdInfoMap[bucketId] = bucketInfo
             } while (c.moveToNext())
             bucketIdInfoMap.values.forEach {
                 resultList.add(it)
@@ -416,7 +422,7 @@ open class GalleryMediaLoader (context: Context) : CoroutineScope by MainScope()
         val path = c.getString(c.getColumnIndex(COLUMN_DATA))
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val contentUriPath = createContentPathUri(id).toString()
-        return if (belowAndroidQ()) {
+        return if (lessThanAndroidQ()) {
             val count = c.getInt(c.getColumnIndex("count"))
             BucketInfo(bucketId, bucketDisplayName, count, path, contentUriPath)
         } else {

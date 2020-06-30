@@ -21,7 +21,7 @@ fun getStatsBarHeight(): Int {
 
 fun getScreenHeight(): Int = GalleryApp.INSTANCE.resources.displayMetrics.heightPixels
 
-fun belowAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
 val Float.dp: Int
     get() {
