@@ -17,13 +17,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="9sp"
-        android:textColor="#333333"
+        android:textColor="@color/color_white"
         android:gravity="center"
         android:layout_gravity="bottom"
         android:shadowDx="1"
         android:shadowDy="2"
         android:shadowRadius="2"
-        android:shadowColor="#FFFFFF"
+        android:shadowColor="#000000"
         tools:text="123"/>
 
 </FrameLayout>

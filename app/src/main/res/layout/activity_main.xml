@@ -20,4 +20,11 @@
         android:text="获取视频"
         android:gravity="center"
         android:onClick="loadVideo"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="获取全部"
+        android:gravity="center"
+        android:onClick="loadAll"/>
 </LinearLayout>

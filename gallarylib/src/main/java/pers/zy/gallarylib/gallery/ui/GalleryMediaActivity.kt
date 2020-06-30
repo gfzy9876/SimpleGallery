@@ -19,38 +19,38 @@ import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ActivityGallaryBinding
 import pers.zy.gallarylib.gallery.commons.getScreenHeight
 import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
-import pers.zy.gallarylib.gallery.loader.BaseGalleryMediaLoader
-import pers.zy.gallarylib.gallery.loader.GalleryImageLoader
-import pers.zy.gallarylib.gallery.loader.GalleryVideoLoader
+import pers.zy.gallarylib.gallery.engine.GalleryMediaLoader
 import pers.zy.gallarylib.gallery.model.BaseMediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 import pers.zy.gallarylib.gallery.model.MediaImageInfo
 import pers.zy.gallarylib.gallery.model.MediaVideoInfo
-import java.lang.RuntimeException
 
 class GalleryMediaActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_MIME_TYPE = "extra_mime_type"
-        private const val MIME_TYPE_IMAGE = 1
-        private const val MIME_TYPE_VIDEO = 2
-        private const val MIME_TYPE_ALL = 3
 
         fun startShowImage(context: Context) {
             context.startActivity(Intent(context, GalleryMediaActivity::class.java).apply {
-                putExtra(EXTRA_MIME_TYPE, MIME_TYPE_IMAGE)
+                putExtra(EXTRA_MIME_TYPE, GalleryMediaLoader.MIME_TYPE_IMAGE)
             })
         }
 
         fun startShowVideo(context: Context) {
             context.startActivity(Intent(context, GalleryMediaActivity::class.java).apply {
-                putExtra(EXTRA_MIME_TYPE, MIME_TYPE_VIDEO)
+                putExtra(EXTRA_MIME_TYPE, GalleryMediaLoader.MIME_TYPE_VIDEO)
+            })
+        }
+
+        fun startShowAll(context: Context) {
+            context.startActivity(Intent(context, GalleryMediaActivity::class.java).apply {
+                putExtra(EXTRA_MIME_TYPE, GalleryMediaLoader.MIME_TYPE_ALL)
             })
         }
     }
 
-    private lateinit var imageLoader: GalleryImageLoader
-    private lateinit var videoLoader: GalleryVideoLoader
+    private var mimeType: Int = GalleryMediaLoader.MIME_TYPE_ALL
+    private lateinit var galleryMediaLoader: GalleryMediaLoader
     private lateinit var binding: ActivityGallaryBinding
 
     private val mediaList = mutableListOf<BaseMediaInfo>()
@@ -81,6 +81,7 @@ class GalleryMediaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.trans_from_bottom_enter_anim, 0)
         binding = ActivityGallaryBinding.inflate(layoutInflater)
+        mimeType = intent.getIntExtra(EXTRA_MIME_TYPE, GalleryMediaLoader.MIME_TYPE_ALL)
         setContentView(binding.root)
         initView()
         initMediaLoader()
@@ -119,7 +120,7 @@ class GalleryMediaActivity : AppCompatActivity() {
         }
         bucketAdapter.register(BucketInfo::class.java, BucketBinder { bucketInfo ->
             refreshBucketSelectorState(false)
-            if (imageLoader.selectBucketId != bucketInfo.id) {
+            if (galleryMediaLoader.selectBucketId != bucketInfo.id) {
                 binding.root.postDelayed({
                     requestMediaWithBucketId(bucketInfo)
                 }, 300)
@@ -148,31 +149,16 @@ class GalleryMediaActivity : AppCompatActivity() {
     }
 
     private fun initMediaLoader() {
-        imageLoader = GalleryImageLoader(this)
-        videoLoader = GalleryVideoLoader(this)
-        getGalleryMediaLoader()?.loadMedia(mediaListCall = {
+        galleryMediaLoader = GalleryMediaLoader(this)
+        galleryMediaLoader.loadMedia(mimeType, successCall = {
             refreshMedia(it)
         })
-        getGalleryMediaLoader()?.loadBucket({
-            bucketList.addAll(it)
-            bucketAdapter.notifyDataSetChanged()
-        }, {
-            throw RuntimeException(it)
+        galleryMediaLoader.loadBucket(mimeType, {
+            if (it.isNotEmpty()) {
+                bucketList.addAll(it)
+                bucketAdapter.notifyDataSetChanged()
+            }
         })
-    }
-
-    private fun getGalleryMediaLoader(): BaseGalleryMediaLoader? {
-        return when (intent.getIntExtra(EXTRA_MIME_TYPE, -1)) {
-            MIME_TYPE_IMAGE -> {
-                imageLoader
-            }
-            MIME_TYPE_VIDEO -> {
-                videoLoader
-            }
-            else -> {
-                null
-            }
-        }
     }
 
     private fun refreshBucketSelectorState(show: Boolean) {
@@ -190,22 +176,22 @@ class GalleryMediaActivity : AppCompatActivity() {
 
     private fun requestMediaWithBucketId(bucketInfo: BucketInfo) {
         binding.tvBucketSelector.text = bucketInfo.displayName
-        getGalleryMediaLoader()?.apply {
-            selectBucketId = bucketInfo.id
-            loadMedia(mediaListCall = {
-                refreshMedia(it)
-            })
-        }
+        galleryMediaLoader.selectBucketId = bucketInfo.id
+        galleryMediaLoader.loadMedia(mimeType, successCall = {
+            refreshMedia(it)
+        })
     }
 
     private fun refreshMedia(result: List<BaseMediaInfo>) {
         mediaList.clear()
-        mediaList.addAll(result)
+        if (result.isNotEmpty()) {
+            mediaList.addAll(result)
+        }
         mediaAdapter.notifyDataSetChanged()
     }
 
     private fun loadMoreMedia(page: Int) {
-        getGalleryMediaLoader()?.loadMedia(page, mediaListCall = {
+        galleryMediaLoader.loadMedia(mimeType, page, successCall = {
             val orgSize = mediaList.size
             mediaList.addAll(it)
             mediaAdapter.notifyItemRangeInserted(orgSize, mediaList.size - orgSize)

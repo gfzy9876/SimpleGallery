@@ -36,7 +36,7 @@
                 android:textColor="@color/color_white"
                 android:gravity="center"
                 android:includeFontPadding="false"
-                android:text="所有图片"/>
+                android:text="所有"/>
 
             <FrameLayout
                 android:id="@+id/fl_bucket_arrow"
