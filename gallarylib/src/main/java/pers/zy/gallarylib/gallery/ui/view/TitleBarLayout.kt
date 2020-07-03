@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import pers.zy.gallarylib.R
-import pers.zy.gallarylib.databinding.LayoutTitleBarBinding
+import pers.zy.gallarylib.databinding.ViewTitleBarBinding
 
 /**
  * date: 2020/6/9   time: 5:10 PM
@@ -17,7 +17,7 @@ import pers.zy.gallarylib.databinding.LayoutTitleBarBinding
  **/
 class TitleBarLayout(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
-    private val binding: LayoutTitleBarBinding = LayoutTitleBarBinding.inflate(LayoutInflater.from(context), this)
+    private val binding: ViewTitleBarBinding = ViewTitleBarBinding.inflate(LayoutInflater.from(context), this)
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.TitleBarLayout).apply {
