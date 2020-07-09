@@ -10,14 +10,14 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import pers.zy.gallarylib.databinding.ActivityMediaPreviewBinding
 import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
-import pers.zy.gallarylib.gallery.model.MediaImageInfo
+import pers.zy.gallarylib.gallery.model.LocalMediaInfo
 
 class MediaPreviewActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_MEDIA_INFO = "extra_media_info"
 
-        fun start(context: Context, mediaInfo: MediaImageInfo) {
+        fun start(context: Context, mediaInfo: LocalMediaInfo) {
             context.startActivity(Intent(context, MediaPreviewActivity::class.java).apply {
                 putExtra(EXTRA_MEDIA_INFO, mediaInfo)
             })
@@ -25,7 +25,7 @@ class MediaPreviewActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMediaPreviewBinding
-    private lateinit var mediaImageInfo: MediaImageInfo
+    private lateinit var mediaImageInfo: LocalMediaInfo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
