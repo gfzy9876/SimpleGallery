@@ -5,7 +5,7 @@
         <shape
             android:shape="rectangle">
 
-            <solid android:color="@color/color_ED"/>
+            <solid android:color="@color/color_4C"/>
 
             <corners android:radius="6dp"/>
         </shape>
@@ -16,7 +16,7 @@
         android:left="50dp"
         android:right="50dp">
         <bitmap android:src="@drawable/default_photo"
-            android:tint="@color/color_D5"/>
+            android:tint="@color/color_88"/>
     </item>
 
 </layer-list>

@@ -20,12 +20,9 @@ import pers.zy.gallarylib.databinding.ActivityGallaryBinding
 import pers.zy.gallarylib.gallery.commons.getScreenHeight
 import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
 import pers.zy.gallarylib.gallery.engine.GalleryMediaLoader
-import pers.zy.gallarylib.gallery.model.BaseMediaInfo
-import pers.zy.gallarylib.gallery.model.BucketInfo
-import pers.zy.gallarylib.gallery.model.MediaImageInfo
-import pers.zy.gallarylib.gallery.model.MediaVideoInfo
+import pers.zy.gallarylib.gallery.model.*
 
-class GalleryMediaActivity : AppCompatActivity() {
+class GalleryMediaActivity : AppCompatActivity(), BaseMediaViewBinder.MediaItemClickListener {
 
     companion object {
         private const val EXTRA_MIME_TYPE = "extra_mime_type"
@@ -53,8 +50,10 @@ class GalleryMediaActivity : AppCompatActivity() {
     private lateinit var galleryMediaLoader: GalleryMediaLoader
     private lateinit var binding: ActivityGallaryBinding
 
-    private val mediaList = mutableListOf<BaseMediaInfo>()
+    private val mediaList = mutableListOf<LocalMediaInfo>()
+    private val selectedMediaList = mutableListOf<LocalMediaInfo>()
     private val mediaAdapter = MultiTypeAdapter(mediaList)
+    private lateinit var mediaLayoutManager: GridLayoutManager
     private val bucketList = mutableListOf<BucketInfo>()
     private val bucketAdapter = MultiTypeAdapter(bucketList)
 
@@ -99,6 +98,27 @@ class GalleryMediaActivity : AppCompatActivity() {
         bucketExitAnim.end()
     }
 
+    override fun mediaItemClick(localMediaInfo: LocalMediaInfo) {
+        if (selectedMediaList.contains(localMediaInfo)) {
+            val removeIndex = mediaList.indexOf(localMediaInfo)
+            selectedMediaList.remove(localMediaInfo)
+            mediaAdapter.notifyItemChanged(removeIndex, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
+
+            val firstVisibleItemPosition = mediaLayoutManager.findFirstVisibleItemPosition()
+            val lastVisibleItemPosition = mediaLayoutManager.findLastVisibleItemPosition()
+            selectedMediaList.forEach {
+                val position = mediaList.indexOf(it)
+                if (position in firstVisibleItemPosition..lastVisibleItemPosition) {
+                    mediaAdapter.notifyItemChanged(position, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
+                }
+            }
+        } else {
+            selectedMediaList.add(localMediaInfo)
+            val addIndex = mediaList.indexOf(localMediaInfo)
+            mediaAdapter.notifyItemChanged(addIndex, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
+        }
+    }
+
     private fun initView() {
         binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
             height += getStatsBarHeight()
@@ -106,13 +126,13 @@ class GalleryMediaActivity : AppCompatActivity() {
         binding.titleBar.setPadding(0, getStatsBarHeight(), 0, 0)
         binding.titleBar.setIconClickListener(View.OnClickListener { finish() })
 
-        mediaAdapter.register(MediaImageInfo::class, MediaImageBinder())
-        mediaAdapter.register(MediaVideoInfo::class, MediaVideoBinder())
+        mediaAdapter.register(LocalMediaImageInfo::class, MediaImageViewBinder(selectedMediaList, this))
+        mediaAdapter.register(LocalMediaVideoInfo::class, MediaVideoViewBinder(selectedMediaList, this))
+        mediaLayoutManager = GridLayoutManager(this@GalleryMediaActivity, 4)
         binding.rvMedia.apply {
-            adapter = this@GalleryMediaActivity.mediaAdapter
-            val gridLayoutManager = GridLayoutManager(this@GalleryMediaActivity, 4)
-            layoutManager = gridLayoutManager
-            addOnScrollListener(object : EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            adapter = mediaAdapter
+            layoutManager = mediaLayoutManager
+            addOnScrollListener(object : EndlessRecyclerViewScrollListener(mediaLayoutManager) {
                 override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
                     loadMoreMedia(page)
                 }
@@ -182,19 +202,24 @@ class GalleryMediaActivity : AppCompatActivity() {
         })
     }
 
-    private fun refreshMedia(result: List<BaseMediaInfo>) {
+    private fun refreshMedia(result: List<LocalMediaInfo>) {
         mediaList.clear()
-        if (result.isNotEmpty()) {
-            mediaList.addAll(result)
-        }
+        addResult(result)
         mediaAdapter.notifyDataSetChanged()
+    }
+
+    private fun addResult(result: List<LocalMediaInfo>) {
+        if (result.isEmpty()) return
+        mediaList.addAll(result)
     }
 
     private fun loadMoreMedia(page: Int) {
         galleryMediaLoader.loadMedia(mimeType, page, successCall = {
             val orgSize = mediaList.size
-            mediaList.addAll(it)
-            mediaAdapter.notifyItemRangeInserted(orgSize, mediaList.size - orgSize)
+            addResult(it)
+            if (mediaList.size != orgSize) {
+                mediaAdapter.notifyItemRangeInserted(orgSize, mediaList.size - orgSize)
+            }
         })
     }
 }
