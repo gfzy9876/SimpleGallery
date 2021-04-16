@@ -17,7 +17,7 @@ import pers.zy.gallarylib.databinding.ViewTitleBarBinding
  **/
 class TitleBarLayout(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
 
-    private val binding: ViewTitleBarBinding = ViewTitleBarBinding.inflate(LayoutInflater.from(context), this)
+    private val binding: ViewTitleBarBinding = ViewTitleBarBinding.inflate(LayoutInflater.from(context), this, true)
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.TitleBarLayout).apply {

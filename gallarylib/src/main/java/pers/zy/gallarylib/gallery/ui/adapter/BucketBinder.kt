@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery.ui
+package pers.zy.gallarylib.gallery.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

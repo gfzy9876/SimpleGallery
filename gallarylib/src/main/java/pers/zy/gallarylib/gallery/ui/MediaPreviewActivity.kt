@@ -9,15 +9,15 @@ import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import pers.zy.gallarylib.databinding.ActivityMediaPreviewBinding
-import pers.zy.gallarylib.gallery.commons.getStatsBarHeight
-import pers.zy.gallarylib.gallery.model.LocalMediaInfo
+import pers.zy.gallarylib.gallery.commons.Common
+import pers.zy.gallarylib.gallery.model.MediaInfo
 
 class MediaPreviewActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_MEDIA_INFO = "extra_media_info"
 
-        fun start(context: Context, mediaInfo: LocalMediaInfo) {
+        fun start(context: Context, mediaInfo: MediaInfo) {
             context.startActivity(Intent(context, MediaPreviewActivity::class.java).apply {
                 putExtra(EXTRA_MEDIA_INFO, mediaInfo)
             })
@@ -25,7 +25,7 @@ class MediaPreviewActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMediaPreviewBinding
-    private lateinit var mediaImageInfo: LocalMediaInfo
+    private lateinit var mediaImageInfo: MediaInfo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +40,7 @@ class MediaPreviewActivity : AppCompatActivity() {
     }
 
     private fun initTitleBar() {
-        val statsBarHeight = getStatsBarHeight()
+        val statsBarHeight = Common.getStatsBarHeight()
         binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
             height += statsBarHeight
         }

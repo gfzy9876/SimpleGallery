@@ -2,6 +2,7 @@ package pers.zy.gallarylib.gallery.commons
 
 import android.os.Build
 import android.util.TypedValue
+import android.widget.Toast
 import pers.zy.gallarylib.gallery.GalleryApp
 
 /**
@@ -10,18 +11,26 @@ import pers.zy.gallarylib.gallery.GalleryApp
  * Have a nice day :)
  **/
 
-fun getStatsBarHeight(): Int {
-    var height = 0
-    val resId = GalleryApp.INSTANCE.resources.getIdentifier("status_bar_height", "dimen", "android")
-    if (resId > 0) {
-        height = GalleryApp.INSTANCE.resources.getDimensionPixelSize(resId)
+object Common {
+    fun getStatsBarHeight(): Int {
+        var height = 0
+        val resId = GalleryApp.INSTANCE.resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resId > 0) {
+            height = GalleryApp.INSTANCE.resources.getDimensionPixelSize(resId)
+        }
+        return height
     }
-    return height
+
+    fun getScreenHeight(): Int = GalleryApp.INSTANCE.resources.displayMetrics.heightPixels
+
+    fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+
+    fun makeToast(msg: String) {
+        Toast.makeText(GalleryApp.INSTANCE, msg, Toast.LENGTH_SHORT).show()
+    }
 }
 
-fun getScreenHeight(): Int = GalleryApp.INSTANCE.resources.displayMetrics.heightPixels
 
-fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
 val Float.dp: Int
     get() {
@@ -32,3 +41,4 @@ val Float.dpF: Float
     get() {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryApp.INSTANCE.resources.displayMetrics)
     }
+

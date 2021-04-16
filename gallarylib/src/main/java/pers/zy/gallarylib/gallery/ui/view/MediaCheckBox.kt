@@ -18,18 +18,14 @@ class MediaCheckBox(context: Context, attrs: AttributeSet? = null) : FrameLayout
         set(value) {
             field = value
             if (value) {
-                binding.flSelectMedia.animate().alpha(1f).setDuration(200).start()
+                binding.flSelectMedia.alpha = 1f
             } else {
-                binding.flSelectMedia.animate().alpha(0f).setDuration(200).start()
+                binding.flSelectMedia.alpha = 0f
                 binding.tvSelectMediaCount.text = ""
             }
         }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-    }
-
-    fun setSelectNumber(number: Int) {
-        binding.tvSelectMediaCount.text = number.toString()
     }
 }

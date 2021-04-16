@@ -2,13 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pers.zy.gallarylib">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+
     <application android:name=".gallery.GalleryApp">
         <activity
-            android:name=".gallery.ui.GalleryMediaActivity"
-            android:theme="@style/GalleryStyle.TransStyle" />
+            android:name=".gallery.ui.list.GalleryMediaListAct"
+            android:theme="@style/GalleryStyle.TransStyle"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".gallery.ui.MediaPreviewActivity"
-            android:theme="@style/GalleryStyle" />
+            android:theme="@style/GalleryStyle"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

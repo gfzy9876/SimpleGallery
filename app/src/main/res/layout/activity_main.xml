@@ -27,4 +27,9 @@
         android:text="获取全部"
         android:gravity="center"
         android:onClick="loadAll"/>
+
+    <ImageView
+        android:id="@+id/iv_send_box"
+        android:layout_width="100dp"
+        android:layout_height="100dp"/>
 </LinearLayout>
