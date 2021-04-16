@@ -2,7 +2,7 @@ package pers.zy.gallarylib.gallery.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
-import pers.zy.gallarylib.gallery.engine.GalleryMediaLoader
+import pers.zy.gallarylib.gallery.ui.GalleryMediaLoader
 
 /**
  * date: 2020/6/11   time: 2:15 PM

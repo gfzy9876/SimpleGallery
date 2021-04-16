@@ -9,7 +9,7 @@ import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import pers.zy.gallarylib.databinding.ActivityMediaPreviewBinding
-import pers.zy.gallarylib.gallery.commons.Common
+import pers.zy.gallarylib.gallery.tools.Common
 import pers.zy.gallarylib.gallery.model.MediaInfo
 
 class MediaPreviewActivity : AppCompatActivity() {

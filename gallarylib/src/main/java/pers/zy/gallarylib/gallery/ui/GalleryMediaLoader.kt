@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery.engine
+package pers.zy.gallarylib.gallery.ui
 
 import android.content.Context
 import android.database.Cursor
@@ -11,7 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
-import pers.zy.gallarylib.gallery.commons.Common
+import pers.zy.gallarylib.gallery.tools.Common
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 
@@ -20,7 +20,8 @@ import pers.zy.gallarylib.gallery.model.BucketInfo
  * author zy
  * Have a nice day :)
  **/
-class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by MainScope(), LifecycleObserver {
+class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by MainScope(),
+    LifecycleObserver {
 
     companion object {
         const val BUCKET_ID_NON_SELECTIVE = -1L
@@ -103,7 +104,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                     getMediaProjection(),
                     getMediaSelection(mimeType),
                     getMediaSelectionArgs(mimeType),
-                    "${DEFAULT_SORT}${getPageLimitSortOrder(page, perPage)}"
+                    "$DEFAULT_SORT${getPageLimitSortOrder(page, perPage)}"
                 )
                 cursor?.let { c ->
                     if (!c.moveToFirst()) return@let
@@ -145,40 +146,40 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
                 if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
-                    "${COLUMN_MEDIA_TYPE}=?" +
+                    "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_BUCKET_ID}=$selectBucketId" +
-                            " AND ${COLUMN_SIZE}>0"
+                            " AND $COLUMN_BUCKET_ID=$selectBucketId" +
+                            " AND $COLUMN_SIZE>0"
                 } else {
-                    "${COLUMN_MEDIA_TYPE}=?" +
+                    "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_SIZE}>0"
+                            " AND $COLUMN_SIZE>0"
                 }
             }
             MIME_TYPE_VIDEO -> {
                 if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
-                    "${COLUMN_MEDIA_TYPE}=?" +
-                            " AND ${COLUMN_BUCKET_ID}=${selectBucketId}" +
-                            " AND ${COLUMN_DURATION}>0" +
-                            " AND ${COLUMN_SIZE}>0"
+                    "$COLUMN_MEDIA_TYPE=?" +
+                            " AND $COLUMN_BUCKET_ID=${selectBucketId}" +
+                            " AND $COLUMN_DURATION>0" +
+                            " AND $COLUMN_SIZE>0"
                 } else {
-                    "${COLUMN_MEDIA_TYPE}=?" +
-                            " AND ${COLUMN_DURATION}>0" +
-                            " AND ${COLUMN_SIZE}>0"
+                    "$COLUMN_MEDIA_TYPE=?" +
+                            " AND $COLUMN_DURATION>0" +
+                            " AND $COLUMN_SIZE>0"
                 }
             }
             else ->  {
                 if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
-                    "(${COLUMN_MEDIA_TYPE}=?" +
-                            " OR ${COLUMN_MEDIA_TYPE}=?)" +
-                            " AND ${COLUMN_BUCKET_ID}=${selectBucketId}" +
+                    "($COLUMN_MEDIA_TYPE=?" +
+                            " OR $COLUMN_MEDIA_TYPE=?)" +
+                            " AND $COLUMN_BUCKET_ID=${selectBucketId}" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_SIZE}>0"
+                            " AND $COLUMN_SIZE>0"
                 } else {
-                    "(${COLUMN_MEDIA_TYPE}=?" +
-                            " OR ${COLUMN_MEDIA_TYPE}=?)" +
+                    "($COLUMN_MEDIA_TYPE=?" +
+                            " OR $COLUMN_MEDIA_TYPE=?)" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_SIZE}>0"
+                            " AND $COLUMN_SIZE>0"
                 }
             }
         }
@@ -226,7 +227,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                     COLUMN_THUMB_DATA,
                     COLUMN_ID
                  ),
-                "${COLUMN_ID}=$id",
+                "$COLUMN_ID=$id",
                 null,
                 null
             )
@@ -310,38 +311,38 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
                 if (Common.lessThanAndroidQ()) {
-                    "${COLUMN_MEDIA_TYPE}=?" +
+                    "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_SIZE}>0)" +
-                            " GROUP BY (${COLUMN_BUCKET_ID}"
+                            " AND $COLUMN_SIZE>0)" +
+                            " GROUP BY ($COLUMN_BUCKET_ID"
                 } else {
-                    "${COLUMN_MEDIA_TYPE}=?" +
+                    "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " AND ${COLUMN_SIZE}>0"
+                            " AND $COLUMN_SIZE>0"
                 }
             }
             MIME_TYPE_VIDEO -> {
                 if (Common.lessThanAndroidQ()) {
-                    "${COLUMN_MEDIA_TYPE}=?" +
-                            " AND ${COLUMN_SIZE}>0)" +
-                            " GROUP BY (${COLUMN_BUCKET_ID}"
+                    "$COLUMN_MEDIA_TYPE=?" +
+                            " AND $COLUMN_SIZE>0)" +
+                            " GROUP BY ($COLUMN_BUCKET_ID"
                 } else {
-                    "${COLUMN_MEDIA_TYPE}=?" +
-                            " AND ${COLUMN_SIZE}>0"
+                    "$COLUMN_MEDIA_TYPE=?" +
+                            " AND $COLUMN_SIZE>0"
                 }
             }
             else -> {
                 if (Common.lessThanAndroidQ()) {
-                    "(${COLUMN_MEDIA_TYPE}=?" +
+                    "($COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " OR ${COLUMN_MEDIA_TYPE}=?)" +
-                            " AND ${COLUMN_SIZE}>0)" +
-                            " GROUP BY (${COLUMN_BUCKET_ID}"
+                            " OR $COLUMN_MEDIA_TYPE=?)" +
+                            " AND $COLUMN_SIZE>0)" +
+                            " GROUP BY ($COLUMN_BUCKET_ID"
                 } else {
-                    "(${COLUMN_MEDIA_TYPE}=?" +
+                    "($COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
-                            " OR ${COLUMN_MEDIA_TYPE}=?)" +
-                            " AND ${COLUMN_SIZE}>0"
+                            " OR $COLUMN_MEDIA_TYPE=?)" +
+                            " AND $COLUMN_SIZE>0"
                 }
             }
         }
@@ -441,7 +442,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
 
     private fun getGiftLimitSelection(): String {
         return if (true) {
-            " AND ${COLUMN_MIME_TYPE}!='image/gif'"
+            " AND $COLUMN_MIME_TYPE!='image/gif'"
         } else {
             ""
         }

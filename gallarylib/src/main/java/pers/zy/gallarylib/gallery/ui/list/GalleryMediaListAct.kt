@@ -21,9 +21,9 @@ import com.tbruyelle.rxpermissions3.RxPermissions
 import kotlinx.coroutines.*
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ActivityGallaryBinding
-import pers.zy.gallarylib.gallery.commons.Common
-import pers.zy.gallarylib.gallery.commons.FileUtils
-import pers.zy.gallarylib.gallery.engine.GalleryMediaLoader
+import pers.zy.gallarylib.gallery.tools.Common
+import pers.zy.gallarylib.gallery.tools.FileUtils
+import pers.zy.gallarylib.gallery.ui.GalleryMediaLoader
 import pers.zy.gallarylib.gallery.model.*
 import pers.zy.gallarylib.gallery.ui.EndlessRecyclerViewScrollListener
 import pers.zy.gallarylib.gallery.ui.adapter.BaseMediaViewBinder

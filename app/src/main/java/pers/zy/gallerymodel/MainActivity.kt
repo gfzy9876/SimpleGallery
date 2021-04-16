@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.google.gson.GsonBuilder
-import pers.zy.gallarylib.gallery.commons.d
+import pers.zy.gallarylib.gallery.tools.d
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.ui.list.GalleryMediaListAct
 
