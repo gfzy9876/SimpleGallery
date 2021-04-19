@@ -1,3 +1,2 @@
-include ':gallarylib'
-include ':app'
+include ':app', ':gallarylib'
 rootProject.name = "GalleryModel"

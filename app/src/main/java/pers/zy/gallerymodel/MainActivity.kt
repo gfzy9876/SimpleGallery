@@ -37,4 +37,8 @@ class MainActivity : AppCompatActivity() {
     fun loadAll(view: View) {
         GalleryMediaListAct.startShowAll(this)
     }
+
+    fun onMediaInfoReceived() {
+
+    }
 }
