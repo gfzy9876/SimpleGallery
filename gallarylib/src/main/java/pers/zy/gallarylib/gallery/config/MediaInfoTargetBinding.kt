@@ -1,6 +1,7 @@
 package pers.zy.gallarylib.gallery.config
 
 import pers.zy.apt_annotation.MediaInfoConstants
+import pers.zy.gallarylib.gallery.model.MediaInfo
 import java.lang.ref.WeakReference
 
 /**
@@ -10,7 +11,7 @@ import java.lang.ref.WeakReference
  **/
 class MediaInfoTargetBinding {
     companion object {
-        val responseActivityMap = hashMapOf<String, Any>()
+        @JvmStatic val responseActivityMap = hashMapOf<String, Any>()
 
         @JvmStatic fun bind(target: Any) {
             val bindClazz = Class.forName(target::class.java.name + MediaInfoConstants.MEDIA_INFO_PROXY)
@@ -20,10 +21,23 @@ class MediaInfoTargetBinding {
             responseActivityMap[getKey(target)] = proxy
         }
 
+        @JvmStatic fun invokeProxy(targetName: String, result: ArrayList<MediaInfo>): Boolean {
+            val proxy = responseActivityMap[targetName]
+            return if (proxy != null) {
+                val bindClazz = Class.forName(proxy::class.java.name)
+                val onMediaInfoReceivedMethod = bindClazz.getMethod("onMediaInfoReceived", List::class.java)
+                onMediaInfoReceivedMethod.invoke(proxy, result)
+                unbind(targetName)
+                true
+            } else {
+                false
+            }
+        }
+
         @JvmStatic fun unbind(target: Any) {
             responseActivityMap.remove(getKey(target))
         }
 
-        private fun getKey(target: Any): String = target::class.java.simpleName
+        @JvmStatic fun getKey(target: Any): String = target::class.java.simpleName
     }
 }

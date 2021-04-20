@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
+import pers.zy.gallarylib.gallery.config.MediaInfoConfig
 import pers.zy.gallarylib.gallery.tools.GallaryCommon
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
@@ -441,7 +442,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     }
 
     private fun getGiftLimitSelection(): String {
-        return if (true) {
+        return if (MediaInfoConfig.showGif) {
             " AND $COLUMN_MIME_TYPE!='image/gif'"
         } else {
             ""

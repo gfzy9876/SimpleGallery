@@ -35,10 +35,6 @@ import pers.zy.gallarylib.gallery.ui.adapter.MediaVideoViewBinder
 
 class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
-//    private lateinit var fromContextName: String
-//    private var mimeType: Int = GalleryMediaLoader.MIME_TYPE_ALL
-    private lateinit var config: MediaInfoConfig
-
     private val wrapperList = mutableListOf<MediaInfoWrapper>()
     private val selectedWrapperList = mutableListOf<MediaInfoWrapper>()
     private val bucketList = mutableListOf<BucketInfo>()
@@ -72,7 +68,6 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.trans_from_bottom_enter_anim, 0)
         this.binding = ActivityGallaryBinding.inflate(LayoutInflater.from(this))
-        this.config = intent.getParcelableExtra(MediaInfoDispatcher.EXTRA_REQUEST_MEDIA_INFO_CONFIG)
         setContentView(binding.root)
         initView()
         initMediaLoader()
@@ -99,7 +94,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
         mediaAdapter.register(ImageMediaInfoWrapper::class, MediaImageViewBinder(selectedWrapperList, ::mediaItemClick))
         mediaAdapter.register(VideoMediaInfoWrapper::class, MediaVideoViewBinder(selectedWrapperList, ::mediaItemClick))
-        mediaLayoutManager = GridLayoutManager(this@GalleryMediaListAct, 3)
+        mediaLayoutManager = GridLayoutManager(this@GalleryMediaListAct, MediaInfoConfig.columnCount)
         binding.rvMedia.apply {
             adapter = mediaAdapter
             layoutManager = mediaLayoutManager
@@ -155,13 +150,8 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun setMediaInfoResultAndFinish(result: ArrayList<MediaInfo>) {
-        val proxy = MediaInfoTargetBinding.responseActivityMap[config.targetName]
-        if (proxy != null) {
-            val bindClazz = Class.forName(proxy::class.java.name)
-            val onMediaInfoReceivedMethod = bindClazz.getMethod("onMediaInfoReceived", List::class.java)
-            onMediaInfoReceivedMethod.invoke(proxy, result)
-            MediaInfoTargetBinding.unbind(config.targetName)
-        } else {
+        val invoked = MediaInfoTargetBinding.invokeProxy(MediaInfoConfig.targetName, result)
+        if (!invoked) {
             setResult(MediaInfoDispatcher.RESULT_CODE_MEDIA_INFO, Intent().apply {
                 putParcelableArrayListExtra(MediaInfoDispatcher.EXTRA_RESULT_MEDIA_INFO, result)
             })
@@ -201,13 +191,18 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun mediaItemClick(wrapper: MediaInfoWrapper, position: Int) {
+        if (selectedWrapperList.size >= MediaInfoConfig.maxMediaCount && !wrapper.selected) {
+            GallaryCommon.makeToast("最多选择${MediaInfoConfig.maxMediaCount}个文件")
+            return
+        }
+
         wrapper.selected = !wrapper.selected
         if (wrapper.selected) {
             selectedWrapperList.add(wrapper)
         } else {
             selectedWrapperList.remove(wrapper)
         }
-        mediaAdapter.notifyItemChanged(position, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
+        mediaAdapter.notifyItemChanged(position, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM)
         val firstVisibleItemPosition = mediaLayoutManager.findFirstVisibleItemPosition()
         val lastVisibleItemPosition = mediaLayoutManager.findLastVisibleItemPosition()
         selectedWrapperList.forEach {
@@ -228,10 +223,10 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun loadMedia() {
-        galleryMediaLoader.loadMedia(this, config.mimeType, successCall = {
+        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, successCall = {
             refreshMedia(it)
         })
-        galleryMediaLoader.loadBucket(this, config.mimeType, {
+        galleryMediaLoader.loadBucket(this, MediaInfoConfig.mimeType, {
             if (it.isNotEmpty()) {
                 bucketList.addAll(it)
                 bucketAdapter.notifyDataSetChanged()
@@ -255,7 +250,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun requestMediaWithBucketId(bucketInfo: BucketInfo) {
         binding.tvBucketSelector.text = bucketInfo.displayName
         galleryMediaLoader.selectBucketId = bucketInfo.id
-        galleryMediaLoader.loadMedia(this, config.mimeType, successCall = {
+        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, successCall = {
             refreshMedia(it)
         })
     }
@@ -281,7 +276,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun loadMoreMedia(page: Int) {
-        galleryMediaLoader.loadMedia(this, config.mimeType, page, successCall = {
+        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, page, successCall = {
             val oldSize = wrapperList.size
             addResult(it)
             if (wrapperList.size != oldSize) {

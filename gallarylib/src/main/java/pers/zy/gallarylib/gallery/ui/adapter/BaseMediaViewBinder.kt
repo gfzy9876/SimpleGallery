@@ -27,6 +27,7 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
 
     companion object {
         const val PAYLOADS_UPDATE_SELECTED_INDEX = 1
+        const val PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM = 2
     }
 
     abstract fun createViewHolder(
@@ -40,8 +41,20 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
     }
 
     override fun onBindViewHolder(holder: VH, item: T, payloads: List<Any>) {
-        if (payloads.isNotEmpty() && payloads[0] as? Int == PAYLOADS_UPDATE_SELECTED_INDEX) {
-            updateMediaCheckBox(holder, item)
+        if (payloads.isNotEmpty()) {
+            when (payloads[0] as Int) {
+                PAYLOADS_UPDATE_SELECTED_INDEX -> {
+                    updateMediaCheckBox(holder, item)
+                }
+                PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM -> {
+                    updateMediaCheckBox(holder, item)
+                    if (item.selected) {
+                        holder.selectAnim.start()
+                    } else {
+                        holder.selectAnim.reverse()
+                    }
+                }
+            }
         } else {
             super.onBindViewHolder(holder, item, payloads)
         }
@@ -83,7 +96,7 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
     ) : RecyclerView.ViewHolder(rootBinding.root) {
         lateinit var wrapper: T
 
-        private val selectAnim: ObjectAnimator by lazy {
+        val selectAnim: ObjectAnimator by lazy {
             //TODO:ZY 动画可配置
 //            ObjectAnimator.ofPropertyValuesHolder(rootBinding.ivMedia,
 //                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.1f),
@@ -97,11 +110,11 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
 
         init {
             rootBinding.root.setOnClickListener {
-                if (wrapper.selected) {
-                    selectAnim.reverse()
-                } else {
-                    selectAnim.start()
-                }
+//                if (wrapper.selected) {
+//                    selectAnim.reverse()
+//                } else {
+//                    selectAnim.start()
+//                }
                 itemClick.invoke(wrapper, absoluteAdapterPosition)
             }
         }

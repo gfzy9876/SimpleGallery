@@ -10,9 +10,20 @@ import pers.zy.gallarylib.gallery.ui.GalleryMediaLoader
  * Have a nice day :)
  **/
 
-@Parcelize
-class MediaInfoConfig(var minMediaCount: Int = 1,
-        var maxMediaCount: Int = 9,
-        var mimeType: Int = GalleryMediaLoader.MIME_TYPE_ALL,
-        var showCamera: Boolean = false,
-        var targetName: String = "") : Parcelable
+class MediaInfoConfig {
+    companion object {
+        @JvmStatic var minMediaCount: Int = 1 //最少选择文件数量
+        @JvmStatic var maxMediaCount: Int = 9 //最大选择文件数量
+        @JvmStatic var mimeType: Int = GalleryMediaLoader.MIME_TYPE_ALL
+        /** 选择文件类型:
+         *  图片 @see[GalleryMediaLoader.MIME_TYPE_IMAGE]
+         *  视频 @see[GalleryMediaLoader.MIME_TYPE_VIDEO]
+         *  全部 @see[GalleryMediaLoader.MIME_TYPE_ALL]
+         **/
+        @JvmStatic var showCamera: Boolean = false //列表是否显示相机
+        @JvmStatic var columnCount: Int = 4 //列表每行图片数量
+        @JvmStatic var targetName: String = "" //result回调接收类的名字
+        @JvmStatic var clickPreview: Boolean = true //点击图片是否预览
+        @JvmStatic var showGif: Boolean = false //是否显示gif
+    }
+}
