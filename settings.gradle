@@ -1,2 +1,4 @@
+include ':apt-processor'
+include ':apt-annotation'
 include ':app', ':gallarylib'
 rootProject.name = "GalleryModel"

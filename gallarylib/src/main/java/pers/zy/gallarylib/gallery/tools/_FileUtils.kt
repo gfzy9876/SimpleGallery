@@ -1,7 +1,6 @@
 package pers.zy.gallarylib.gallery.tools
 
 import android.net.Uri
-import pers.zy.gallarylib.gallery.GalleryApp
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import java.io.File
 import java.io.FileOutputStream
@@ -14,7 +13,7 @@ import java.io.FileOutputStream
 
 object FileUtils {
 
-    val SEND_BOX_DIR = GalleryApp.INSTANCE.externalCacheDir!!.absolutePath +
+    val SEND_BOX_DIR = GallaryCommon.app.externalCacheDir!!.absolutePath +
             "${File.separatorChar}" +
             "GalleryModel"
 
@@ -32,7 +31,7 @@ object FileUtils {
     }
 
     private fun copyFileAndroidQ(sourceUri: Uri, destFile: File) {
-        val desc = GalleryApp.INSTANCE.contentResolver.openAssetFileDescriptor(sourceUri, "r")
+        val desc = GallaryCommon.app.contentResolver.openAssetFileDescriptor(sourceUri, "r")
         val ins = desc!!.createInputStream()
         val outs = FileOutputStream(destFile)
         var i: Int

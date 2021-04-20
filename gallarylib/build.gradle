@@ -53,4 +53,5 @@ dependencies {
     implementation "io.reactivex.rxjava3:rxjava:3.0.12"
     implementation 'com.google.code.gson:gson:2.8.6'
 
+    api project(':apt-annotation')
 }

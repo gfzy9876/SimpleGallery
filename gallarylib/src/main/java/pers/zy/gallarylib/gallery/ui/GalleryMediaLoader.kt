@@ -11,7 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
-import pers.zy.gallarylib.gallery.tools.Common
+import pers.zy.gallarylib.gallery.tools.GallaryCommon
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 
@@ -269,7 +269,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                     DEFAULT_SORT
                 )
                 cursor?.let { c ->
-                    if (Common.lessThanAndroidQ()) {
+                    if (GallaryCommon.lessThanAndroidQ()) {
                         loadBucketListBelowAndroidQ(c, resultList)
                     } else {
                         loadBucketListGreaterThanOrEqualsAndroidQ(c, resultList)
@@ -285,7 +285,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * bucket file 获取需要的列信息
      * */
-    private fun getBucketProjection(): Array<String> = if (Common.lessThanAndroidQ()) {
+    private fun getBucketProjection(): Array<String> = if (GallaryCommon.lessThanAndroidQ()) {
         arrayOf(
             COLUMN_ID,
             COLUMN_DATA,
@@ -310,7 +310,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     private fun getBucketSelection(mimeType: Int): String {
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
-                if (Common.lessThanAndroidQ()) {
+                if (GallaryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
                             " AND $COLUMN_SIZE>0)" +
@@ -322,7 +322,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 }
             }
             MIME_TYPE_VIDEO -> {
-                if (Common.lessThanAndroidQ()) {
+                if (GallaryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             " AND $COLUMN_SIZE>0)" +
                             " GROUP BY ($COLUMN_BUCKET_ID"
@@ -332,7 +332,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 }
             }
             else -> {
-                if (Common.lessThanAndroidQ()) {
+                if (GallaryCommon.lessThanAndroidQ()) {
                     "($COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
@@ -416,7 +416,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val path = c.getString(c.getColumnIndex(COLUMN_DATA))
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val contentUriPath = createContentPathUri(id).toString()
-        return if (Common.lessThanAndroidQ()) {
+        return if (GallaryCommon.lessThanAndroidQ()) {
             val count = c.getInt(c.getColumnIndex("count"))
             BucketInfo(bucketId, bucketDisplayName, count, path, contentUriPath)
         } else {
