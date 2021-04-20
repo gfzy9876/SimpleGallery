@@ -15,14 +15,14 @@ dependencies {
     implementation project(':apt-annotation')
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId = 'pers.zy.gallery'
-                artifactId = 'apt-processor'
-                version = '1.0.0.beta1'
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            maven(MavenPublication) {
+//                groupId = 'pers.zy.gallery'
+//                artifactId = 'apt-processor'
+//                version = '1.0.0.beta1'
+//            }
+//        }
+//    }
+//}
