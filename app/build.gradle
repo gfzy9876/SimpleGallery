@@ -48,7 +48,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
 
-//    implementation project(':gallarylib')
-//    implementation project(':test')
+    implementation project(':test')
+    implementation project(':gallarylib')
 //    implementation project(':apt-processor')
 }
