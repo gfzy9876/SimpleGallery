@@ -60,20 +60,18 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            debug(MavenPublication) {
-                from components.debug
+            maven(MavenPublication) {
                 groupId = 'pers.zy.gallerylib'
                 artifactId = 'GalleryLib-debug'
                 version = '1.0'
             }
-
-            release(MavenPublication) {
-                from components.release
-
-                groupId = 'pers.zy.gallerylib'
-                artifactId = 'GalleryLib-release'
-                version = '1.0'
-            }
+//            release(MavenPublication) {
+//                from components.release
+//
+//                groupId = 'pers.zy.gallerylib'
+//                artifactId = 'GalleryLib-release'
+//                version = '1.0'
+//            }
         }
     }
 }
