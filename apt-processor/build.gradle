@@ -9,13 +9,15 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_7
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'pers.zy.gallerymodel'
-            artifactId = 'apt-processor'
-            version = '1.0.0.beta4'
-            from components.java
+afterEvaluate {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId = 'pers.zy.gallerymodel'
+                artifactId = 'apt-processor'
+                version = '1.0.0.beta4'
+                from components.java
+            }
         }
     }
 }
