@@ -1,7 +1,9 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
+    id 'maven'
 }
+
+group = 'com.github.gfzy9876'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_7
