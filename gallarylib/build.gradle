@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'maven-publish'
 
 android {
     dataBinding {
@@ -54,4 +55,25 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     api project(':apt-annotation')
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            debug(MavenPublication) {
+                from components.debug
+                groupId = 'pers.zy.gallerylib'
+                artifactId = 'GalleryLib-debug'
+                version = '1.0'
+            }
+
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'pers.zy.gallerylib'
+                artifactId = 'GalleryLib-release'
+                version = '1.0'
+            }
+        }
+    }
 }
