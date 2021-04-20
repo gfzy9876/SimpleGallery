@@ -1,9 +1,6 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
 }
-
-group = 'com.github.gfzy9876'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_7
@@ -16,15 +13,3 @@ dependencies {
     implementation 'com.squareup:javapoet:1.10.0'
     implementation project(':apt-annotation')
 }
-
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            maven(MavenPublication) {
-//                groupId = 'pers.zy.gallery'
-//                artifactId = 'apt-processor'
-//                version = '1.0.0.beta1'
-//            }
-//        }
-//    }
-//}
