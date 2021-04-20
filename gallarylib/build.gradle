@@ -2,9 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = 'com.github.gfzy9876'
 
 android {
     dataBinding {
@@ -57,5 +54,4 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     api project(':apt-annotation')
-    api project(':apt-processor')
 }
