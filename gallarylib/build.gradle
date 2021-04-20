@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'maven-publish'
 //apply plugin: 'com.github.dcendents.android-maven'
 
 android {
@@ -30,6 +31,16 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'pers.zy.gallerymodel'
+            artifactId = 'gallarylib'
+            version = '1.0.0.beta2'
+        }
     }
 }
 
