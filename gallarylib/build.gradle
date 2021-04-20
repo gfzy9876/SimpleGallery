@@ -40,13 +40,13 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'pers.zy.gallerymodel'
                 artifactId = 'gallarylib'
-                version = '1.0.0.beta4'
+//                version = '1.0.0.beta4'
                 from components.release
             }
             debug(MavenPublication) {
                 groupId = 'pers.zy.gallerymodel'
                 artifactId = 'gallarylib'
-                version = '1.0.0.beta4'
+//                version = '1.0.0.beta4'
                 from components.debug
             }
         }

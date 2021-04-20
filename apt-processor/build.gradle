@@ -15,7 +15,7 @@ afterEvaluate {
             maven(MavenPublication) {
                 groupId = 'pers.zy.gallerymodel'
                 artifactId = 'apt-processor'
-                version = '1.0.0.beta4'
+//                version = '1.0.0.beta4'
                 from components.java
             }
         }
