@@ -14,7 +14,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'pers.zy.gallerymodel'
             artifactId = 'apt-annotation'
-            version = '1.0.0.beta2'
+            version = '1.0.0.beta4'
             from components.java
         }
     }
