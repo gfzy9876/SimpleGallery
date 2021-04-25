@@ -11,8 +11,13 @@ import pers.zy.gallarylib.gallery.tools.GallaryCommon
  **/
 class App : Application() {
 
+    companion object {
+        lateinit var INSTANCE: App
+    }
+
     override fun onCreate() {
         super.onCreate()
+        INSTANCE = this
         MultiDex.install(this)
         GallaryCommon.init(this)
     }

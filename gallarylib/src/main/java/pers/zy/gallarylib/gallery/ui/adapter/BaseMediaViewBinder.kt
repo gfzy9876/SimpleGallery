@@ -14,6 +14,7 @@ import com.drakeet.multitype.ItemViewBinder
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ItemMediaRootBinding
 import pers.zy.gallarylib.gallery.model.MediaInfoWrapper
+import pers.zy.gallarylib.gallery.tools.d
 
 /**
  * date: 2020/6/30   time: 12:30 PM
@@ -30,14 +31,10 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
         const val PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM = 2
     }
 
-    abstract fun createViewHolder(
-        inflater: LayoutInflater,
-        rootBinding: ItemMediaRootBinding,
-        itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
-    ): VH
+    abstract fun createViewHolder(inflater: LayoutInflater, rootBinding: ItemMediaRootBinding): VH
 
     override fun onCreateViewHolder(inflater: LayoutInflater, parent: ViewGroup): VH {
-        return createViewHolder(inflater, ItemMediaRootBinding.inflate(inflater), itemClick)
+        return createViewHolder(inflater, ItemMediaRootBinding.inflate(inflater))
     }
 
     override fun onBindViewHolder(holder: VH, item: T, payloads: List<Any>) {
@@ -73,7 +70,11 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
         } else {
             holder.rootBinding.selectMask.alpha = 0f
         }
+        holder.rootBinding.root.setOnClickListener {
+            itemClick.invoke(item, holder.absoluteAdapterPosition)
+        }
         updateMediaCheckBox(holder, item)
+        holder.rootBinding.tvTest.text = "" + holder.absoluteAdapterPosition
     }
 
     private fun updateMediaCheckBox(holder: VH, item: T) {
@@ -90,10 +91,8 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
         Glide.with(holder.itemView.context).clear(holder.rootBinding.ivMedia)
     }
 
-    internal open class BaseMediaViewHolder<T : MediaInfoWrapper>(
-        val rootBinding: ItemMediaRootBinding,
-        private val itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
-    ) : RecyclerView.ViewHolder(rootBinding.root) {
+    internal open class BaseMediaViewHolder<T : MediaInfoWrapper>(val rootBinding: ItemMediaRootBinding, )
+        : RecyclerView.ViewHolder(rootBinding.root) {
         lateinit var wrapper: T
 
         val selectAnim: ObjectAnimator by lazy {
@@ -105,17 +104,6 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
 //            }
             ObjectAnimator.ofFloat(rootBinding.selectMask, View.ALPHA, 0f, 0.6f).apply {
                 duration = 150
-            }
-        }
-
-        init {
-            rootBinding.root.setOnClickListener {
-//                if (wrapper.selected) {
-//                    selectAnim.reverse()
-//                } else {
-//                    selectAnim.start()
-//                }
-                itemClick.invoke(wrapper, absoluteAdapterPosition)
             }
         }
     }

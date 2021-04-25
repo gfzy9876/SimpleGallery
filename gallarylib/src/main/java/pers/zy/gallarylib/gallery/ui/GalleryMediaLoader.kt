@@ -1,6 +1,5 @@
 package pers.zy.gallarylib.gallery.ui
 
-import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -26,7 +25,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
 
     companion object {
         const val BUCKET_ID_NON_SELECTIVE = -1L
-        const val PAGE_NON_SELECTIVE = -1
 
         val QUERY_URL: Uri = MediaStore.Files.getContentUri("external")
 
@@ -40,7 +38,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         /**
          * Media type
          * */
-
         const val MEDIA_TYPE_IMAGE = MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
         const val MEDIA_TYPE_VIDEO = MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
 
@@ -80,16 +77,15 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
 
     /**
      * @param mimeType 获取媒体类型: [MIME_TYPE_IMAGE] [MIME_TYPE_VIDEO] [MIME_TYPE_ALL]
-     * @param page 获取图片第几页（索引从0开始,page==[PAGE_NON_SELECTIVE]时表示不指定页数，全部获取
-     * @param perPage 每页加载图片个数,page==[PAGE_NON_SELECTIVE]时无效
+     * @param page 获取图片第几页
      * @param successCall
      * @param errorCall
      * */
     fun loadMedia(
-        context: Context,
         mimeType: Int,
-        @IntRange(from = 0) page: Int = 0, perPage: Int = 200,
-        successCall: (List<MediaInfo>) -> Unit, errorCall: ((Throwable) -> Unit)? = null
+        @IntRange(from = 0) page: Int = 0,
+        successCall: (List<MediaInfo>) -> Unit,
+        errorCall: ((Throwable) -> Unit)? = null
     ) {
         launch(coroutineContext + CoroutineExceptionHandler { _, throwable ->
             if (errorCall != null) {
@@ -100,17 +96,25 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }) {
             val mediaList = withContext(coroutineContext + Dispatchers.IO) {
                 val resultList = mutableListOf<MediaInfo>()
-                val cursor = context.contentResolver.query(
+                val cursor = GallaryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getMediaProjection(),
                     getMediaSelection(mimeType),
                     getMediaSelectionArgs(mimeType),
-                    "$DEFAULT_SORT${getPageLimitSortOrder(page, perPage)}"
+                    """
+                        $DEFAULT_SORT${
+                        if (MediaInfoConfig.pagingLoad) {
+                            " LIMIT ${page * MediaInfoConfig.perPage}, $MediaInfoConfig.perPage"
+                        } else {
+                            ""
+                        }
+                    }
+                    """.trimIndent()
                 )
                 cursor?.let { c ->
                     if (!c.moveToFirst()) return@let
                     do {
-                        val mediaInfo = createMediaInfo(c, context)
+                        val mediaInfo = createMediaInfo(c)
                         resultList.add(mediaInfo)
                     } while (c.moveToNext())
                     c.close()
@@ -143,7 +147,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * media file 筛选条件(SQL)
      * */
-    private fun getMediaSelection(mimeType: Int): String? {
+    private fun getMediaSelection(mimeType: Int): String {
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
                 if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
@@ -206,7 +210,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }
     }
 
-    private fun createMediaInfo(c: Cursor, context: Context): MediaInfo {
+    private fun createMediaInfo(c: Cursor): MediaInfo {
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val realPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val contentUriPath = createContentPathUri(id).toString()
@@ -221,8 +225,8 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val duration = c.getLong(c.getColumnIndex(COLUMN_DURATION))
 
         if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-            val thumbCursor = context.contentResolver.query(
-                //TODO:ZY AndroidQ无法获取
+            val thumbCursor = GallaryCommon.app.contentResolver.query(
+                //TODO:ZY AndroidQ无法获取视频缩略图
                 MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
                 arrayOf(
                     COLUMN_THUMB_DATA,
@@ -249,10 +253,10 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
      * */
 
     fun loadBucket(
-        context: Context,
         mimeType: Int,
         bucketListCall: (List<BucketInfo>) -> Unit,
-        errorCall: ((Throwable) -> Unit)? = null) {
+        errorCall: ((Throwable) -> Unit)? = null
+    ) {
         launch(coroutineContext + CoroutineExceptionHandler { _, throwable ->
             if (errorCall != null) {
                 errorCall.invoke(throwable)
@@ -262,7 +266,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }) {
             val result = withContext(coroutineContext + Dispatchers.IO) {
                 val resultList = mutableListOf<BucketInfo>()
-                val cursor = context.contentResolver.query(
+                val cursor = GallaryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getBucketProjection(),
                     getBucketSelection(mimeType),
@@ -430,15 +434,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val sumPreviewRealPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val sumPreviewContentUri = createContentPathUri(sumPreviewId)
         return BucketInfo(BUCKET_ID_NON_SELECTIVE, "所有", 0, sumPreviewRealPath, sumPreviewContentUri.toString())
-    }
-
-    // TODO: 2020/6/30  config动态配置
-    private fun getPageLimitSortOrder(page: Int, perPage: Int): String {
-        return if (page == PAGE_NON_SELECTIVE) {
-            ""
-        } else {
-            " LIMIT ${page * perPage}, $perPage"
-        }
     }
 
     private fun getGiftLimitSelection(): String {

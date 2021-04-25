@@ -20,10 +20,12 @@ class MediaInfoConfig {
          *  视频 @see[GalleryMediaLoader.MIME_TYPE_VIDEO]
          *  全部 @see[GalleryMediaLoader.MIME_TYPE_ALL]
          **/
-        @JvmStatic var showCamera: Boolean = false //列表是否显示相机
+        @JvmStatic var showCamera: Boolean = true //列表是否显示相机
         @JvmStatic var columnCount: Int = 4 //列表每行图片数量
         @JvmStatic var targetName: String = "" //result回调接收类的名字
         @JvmStatic var clickPreview: Boolean = true //点击图片是否预览
         @JvmStatic var showGif: Boolean = false //是否显示gif
+        @JvmStatic var pagingLoad: Boolean = false //是否分页加载
+        @JvmStatic var perPage: Int = 200 //分页加载情况下，每页加载个数
     }
 }

@@ -19,18 +19,16 @@ internal class MediaImageViewBinder(
 
     override fun createViewHolder(
         inflater: LayoutInflater,
-        rootBinding: ItemMediaRootBinding,
-        itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
+        rootBinding: ItemMediaRootBinding
     ): ImageMediaViewHolder {
         val binding = ItemMediaImageBinding.inflate(inflater, rootBinding.root as ViewGroup, true)
-        return ImageMediaViewHolder(binding, rootBinding, itemClick)
+        return ImageMediaViewHolder(binding, rootBinding)
     }
 
     internal class ImageMediaViewHolder(
         val binding: ItemMediaImageBinding,
-        rootBinding: ItemMediaRootBinding,
-        itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
-    ) : BaseMediaViewHolder<ImageMediaInfoWrapper>(rootBinding, itemClick) {
+        rootBinding: ItemMediaRootBinding
+    ) : BaseMediaViewHolder<ImageMediaInfoWrapper>(rootBinding) {
 
     }
 }

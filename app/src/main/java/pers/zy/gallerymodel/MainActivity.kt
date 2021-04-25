@@ -1,14 +1,14 @@
 package pers.zy.gallerymodel
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import pers.zy.apt_annotation.MediaInfoReceived
-import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.config.MediaInfoDispatcher
+import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.tools.d
 
 class MainActivity : AppCompatActivity() {

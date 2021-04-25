@@ -27,17 +27,19 @@ import pers.zy.gallarylib.gallery.model.*
 import pers.zy.gallarylib.gallery.config.MediaInfoTargetBinding
 import pers.zy.gallarylib.gallery.config.MediaInfoConfig
 import pers.zy.gallarylib.gallery.config.MediaInfoDispatcher
+import pers.zy.gallarylib.gallery.tools.e
 import pers.zy.gallarylib.gallery.ui.EndlessRecyclerViewScrollListener
+import pers.zy.gallarylib.gallery.ui.adapter.*
 import pers.zy.gallarylib.gallery.ui.adapter.BaseMediaViewBinder
-import pers.zy.gallarylib.gallery.ui.adapter.BucketBinder
 import pers.zy.gallarylib.gallery.ui.adapter.MediaImageViewBinder
 import pers.zy.gallarylib.gallery.ui.adapter.MediaVideoViewBinder
 
 class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
-    private val wrapperList = mutableListOf<MediaInfoWrapper>()
+    private val wrapperList = mutableListOf<Any>()
     private val selectedWrapperList = mutableListOf<MediaInfoWrapper>()
     private val bucketList = mutableListOf<BucketInfo>()
+    private val cameraItem = CameraItem()
 
     private lateinit var binding: ActivityGallaryBinding
     private val mediaAdapter = MultiTypeAdapter(wrapperList)
@@ -94,15 +96,18 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
         mediaAdapter.register(ImageMediaInfoWrapper::class, MediaImageViewBinder(selectedWrapperList, ::mediaItemClick))
         mediaAdapter.register(VideoMediaInfoWrapper::class, MediaVideoViewBinder(selectedWrapperList, ::mediaItemClick))
+        mediaAdapter.register(CameraItem::class, CameraViewBinder(::showCamera))
         mediaLayoutManager = GridLayoutManager(this@GalleryMediaListAct, MediaInfoConfig.columnCount)
         binding.rvMedia.apply {
             adapter = mediaAdapter
             layoutManager = mediaLayoutManager
-            addOnScrollListener(object : EndlessRecyclerViewScrollListener(mediaLayoutManager) {
-                override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                    loadMoreMedia(page)
-                }
-            })
+            if (MediaInfoConfig.pagingLoad) {
+                addOnScrollListener(object : EndlessRecyclerViewScrollListener(mediaLayoutManager) {
+                    override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                        loadMoreMedia(page)
+                    }
+                })
+            }
         }
         bucketAdapter.register(BucketInfo::class.java, BucketBinder { bucketInfo ->
             refreshBucketSelectorState(false)
@@ -222,11 +227,17 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    private fun showCamera() {
+
+    }
+
     private fun loadMedia() {
-        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, successCall = {
-            refreshMedia(it)
-        })
-        galleryMediaLoader.loadBucket(this, MediaInfoConfig.mimeType, {
+        galleryMediaLoader.loadMedia(
+            MediaInfoConfig.mimeType,
+            successCall = {
+                refreshMedia(it)
+            })
+        galleryMediaLoader.loadBucket(MediaInfoConfig.mimeType, {
             if (it.isNotEmpty()) {
                 bucketList.addAll(it)
                 bucketAdapter.notifyDataSetChanged()
@@ -250,7 +261,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun requestMediaWithBucketId(bucketInfo: BucketInfo) {
         binding.tvBucketSelector.text = bucketInfo.displayName
         galleryMediaLoader.selectBucketId = bucketInfo.id
-        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, successCall = {
+        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, successCall = {
             refreshMedia(it)
         })
     }
@@ -259,6 +270,16 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         wrapperList.clear()
         addResult(result)
         mediaAdapter.notifyDataSetChanged()
+    }
+
+    private fun loadMoreMedia(page: Int) {
+        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, page, successCall = {
+            val oldSize = wrapperList.size
+            addResult(it)
+            if (wrapperList.size != oldSize) {
+                mediaAdapter.notifyItemRangeInserted(oldSize, wrapperList.size - oldSize)
+            }
+        })
     }
 
     private fun addResult(result: List<MediaInfo>) {
@@ -273,15 +294,14 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
         wrapperList.addAll(wrapperResult)
+        e("addResult ${wrapperList.size}")
+        addCameraItemTopIfNeed()
     }
 
-    private fun loadMoreMedia(page: Int) {
-        galleryMediaLoader.loadMedia(this, MediaInfoConfig.mimeType, page, successCall = {
-            val oldSize = wrapperList.size
-            addResult(it)
-            if (wrapperList.size != oldSize) {
-                mediaAdapter.notifyItemRangeInserted(oldSize, wrapperList.size - oldSize)
-            }
-        })
+    private fun addCameraItemTopIfNeed() {
+        wrapperList.remove(cameraItem)
+        if (MediaInfoConfig.showCamera) {
+            wrapperList.add(0, cameraItem)
+        }
     }
 }

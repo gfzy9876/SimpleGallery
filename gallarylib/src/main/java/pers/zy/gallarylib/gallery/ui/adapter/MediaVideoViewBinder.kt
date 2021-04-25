@@ -19,11 +19,10 @@ internal class MediaVideoViewBinder(
 
     override fun createViewHolder(
         inflater: LayoutInflater,
-        rootBinding: ItemMediaRootBinding,
-        itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
+        rootBinding: ItemMediaRootBinding
     ): VideoMediaViewHolder {
         val binding = ItemMediaVideoBinding.inflate(inflater, rootBinding.root as ViewGroup, true)
-        return VideoMediaViewHolder(binding, rootBinding, itemClick)
+        return VideoMediaViewHolder(binding, rootBinding)
     }
 
     override fun onBindViewHolder(holder: VideoMediaViewHolder, item: VideoMediaInfoWrapper) {
@@ -44,9 +43,8 @@ internal class MediaVideoViewBinder(
 
     internal class VideoMediaViewHolder(
         val binding: ItemMediaVideoBinding,
-        rootBinding: ItemMediaRootBinding,
-        itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
-    ) : BaseMediaViewHolder<VideoMediaInfoWrapper>(rootBinding, itemClick) {
+        rootBinding: ItemMediaRootBinding
+    ) : BaseMediaViewHolder<VideoMediaInfoWrapper>(rootBinding) {
 
     }
 }

@@ -27,3 +27,25 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    compileSdkVersion = 30
+    minSdkVersion = 16
+    targetSdkVersion = 30
+
+    dependencies = [
+            core_ktx                  : '1.3.2',
+            appcompat                 : '1.2.0',
+            recyclerview              : '1.2.0',
+            viewpager2                : '1.0.0',
+            glide                     : '4.12.0',
+            constraintlayout          : '2.0.4',
+            gson                      : '2.8.6',
+            rxjava                    : '3.0.12',
+            rxpermissions             : '0.12',
+            multitype                 : '4.2.0',
+
+            kotlinx_coroutines_core   : '1.4.2',
+            kotlinx_coroutines_android: '1.4.1'
+    ]
+}
