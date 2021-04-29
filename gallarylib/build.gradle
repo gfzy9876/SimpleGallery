@@ -68,8 +68,8 @@ dependencies {
 //    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
 //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:${config.kotlinx_coroutines_core}"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:${config.kotlinx_coroutines_android}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${config.kotlinx_coroutines_core}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${config.kotlinx_coroutines_android}"
     implementation "com.github.tbruyelle:rxpermissions:${config.rxpermissions}"
     implementation "io.reactivex.rxjava3:rxjava:${config.rxjava}"
     implementation "com.google.code.gson:gson:${config.gson}"

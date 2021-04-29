@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             d("onMediaInfoReceived ${gson.toJson(it)}")
         }
         Glide.with(this)
-            .load(asd[0].sendBoxPath)
+            .load(asd[0].realPath)
             .into(iv_test)
     }
 }

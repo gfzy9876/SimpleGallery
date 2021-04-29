@@ -11,7 +11,7 @@ import android.widget.Toast
  * Have a nice day :)
  **/
 
-object GallaryCommon {
+object GalleryCommon {
     lateinit var app: Application
 
     fun init(app: Application) {
@@ -38,11 +38,11 @@ object GallaryCommon {
 
 val Float.dp: Int
     get() {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GallaryCommon.app.resources.displayMetrics).toInt()
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryCommon.app.resources.displayMetrics).toInt()
     }
 
 val Float.dpF: Float
     get() {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GallaryCommon.app.resources.displayMetrics)
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryCommon.app.resources.displayMetrics)
     }
 

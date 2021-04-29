@@ -20,7 +20,7 @@ import com.tbruyelle.rxpermissions3.RxPermissions
 import kotlinx.coroutines.*
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ActivityGallaryBinding
-import pers.zy.gallarylib.gallery.tools.GallaryCommon
+import pers.zy.gallarylib.gallery.tools.GalleryCommon
 import pers.zy.gallarylib.gallery.tools.FileUtils
 import pers.zy.gallarylib.gallery.ui.GalleryMediaLoader
 import pers.zy.gallarylib.gallery.model.*
@@ -90,9 +90,9 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun initView() {
         binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
-            height += GallaryCommon.getStatsBarHeight()
+            height += GalleryCommon.getStatsBarHeight()
         }
-        binding.titleBar.setPadding(0, GallaryCommon.getStatsBarHeight(), 0, 0)
+        binding.titleBar.setPadding(0, GalleryCommon.getStatsBarHeight(), 0, 0)
 
         mediaAdapter.register(ImageMediaInfoWrapper::class, MediaImageViewBinder(selectedWrapperList, ::mediaItemClick))
         mediaAdapter.register(VideoMediaInfoWrapper::class, MediaVideoViewBinder(selectedWrapperList, ::mediaItemClick))
@@ -140,13 +140,13 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
             bucketExitAnim.start()
         }
 
-        binding.rvBucket.maxRecyclerViewHeight = (GallaryCommon.getScreenHeight() * 0.5f).toInt()
+        binding.rvBucket.maxRecyclerViewHeight = (GalleryCommon.getScreenHeight() * 0.5f).toInt()
 
         binding.tvSelectOkay.setOnClickListener {
             val result = ArrayList(selectedWrapperList.map {
                 it.mediaInfo
             })
-            if (GallaryCommon.lessThanAndroidQ()) {
+            if (GalleryCommon.lessThanAndroidQ()) {
                 setMediaInfoResultAndFinish(result)
             } else {
                 createSendBoxFile(result)
@@ -189,7 +189,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
                 if (granted) {
                     loadMedia()
                 } else {
-                    GallaryCommon.makeToast("请开启相关权限~")
+                    GalleryCommon.makeToast("请开启相关权限~")
                     finish()
                 }
             }
@@ -197,7 +197,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun mediaItemClick(wrapper: MediaInfoWrapper, position: Int) {
         if (selectedWrapperList.size >= MediaInfoConfig.maxMediaCount && !wrapper.selected) {
-            GallaryCommon.makeToast("最多选择${MediaInfoConfig.maxMediaCount}个文件")
+            GalleryCommon.makeToast("最多选择${MediaInfoConfig.maxMediaCount}个文件")
             return
         }
 

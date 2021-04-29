@@ -1,5 +1,6 @@
 package pers.zy.gallarylib.gallery.ui
 
+import android.content.ContentUris
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -11,7 +12,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
 import pers.zy.gallarylib.gallery.config.MediaInfoConfig
-import pers.zy.gallarylib.gallery.tools.GallaryCommon
+import pers.zy.gallarylib.gallery.tools.GalleryCommon
 import pers.zy.gallarylib.gallery.model.MediaInfo
 import pers.zy.gallarylib.gallery.model.BucketInfo
 
@@ -96,7 +97,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }) {
             val mediaList = withContext(coroutineContext + Dispatchers.IO) {
                 val resultList = mutableListOf<MediaInfo>()
-                val cursor = GallaryCommon.app.contentResolver.query(
+                val cursor = GalleryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getMediaProjection(),
                     getMediaSelection(mimeType),
@@ -126,7 +127,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }
     }
 
-    private fun createContentPathUri(id: Long): Uri = QUERY_URL.buildUpon().appendPath(id.toString()).build()
+    private fun createContentPathUri(id: Long): Uri = ContentUris.withAppendedId(QUERY_URL, id)
 
     /**
      * media file 获取需要的列信息: [COLUMN_ID], [COLUMN_DATA]等......
@@ -225,7 +226,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val duration = c.getLong(c.getColumnIndex(COLUMN_DURATION))
 
         if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-            val thumbCursor = GallaryCommon.app.contentResolver.query(
+            val thumbCursor = GalleryCommon.app.contentResolver.query(
                 //TODO:ZY AndroidQ无法获取视频缩略图
                 MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
                 arrayOf(
@@ -266,7 +267,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }) {
             val result = withContext(coroutineContext + Dispatchers.IO) {
                 val resultList = mutableListOf<BucketInfo>()
-                val cursor = GallaryCommon.app.contentResolver.query(
+                val cursor = GalleryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getBucketProjection(),
                     getBucketSelection(mimeType),
@@ -274,7 +275,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                     DEFAULT_SORT
                 )
                 cursor?.let { c ->
-                    if (GallaryCommon.lessThanAndroidQ()) {
+                    if (GalleryCommon.lessThanAndroidQ()) {
                         loadBucketListBelowAndroidQ(c, resultList)
                     } else {
                         loadBucketListGreaterThanOrEqualsAndroidQ(c, resultList)
@@ -290,7 +291,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * bucket file 获取需要的列信息
      * */
-    private fun getBucketProjection(): Array<String> = if (GallaryCommon.lessThanAndroidQ()) {
+    private fun getBucketProjection(): Array<String> = if (GalleryCommon.lessThanAndroidQ()) {
         arrayOf(
             COLUMN_ID,
             COLUMN_DATA,
@@ -315,7 +316,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     private fun getBucketSelection(mimeType: Int): String {
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
-                if (GallaryCommon.lessThanAndroidQ()) {
+                if (GalleryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
                             " AND $COLUMN_SIZE>0)" +
@@ -327,7 +328,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 }
             }
             MIME_TYPE_VIDEO -> {
-                if (GallaryCommon.lessThanAndroidQ()) {
+                if (GalleryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             " AND $COLUMN_SIZE>0)" +
                             " GROUP BY ($COLUMN_BUCKET_ID"
@@ -337,7 +338,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 }
             }
             else -> {
-                if (GallaryCommon.lessThanAndroidQ()) {
+                if (GalleryCommon.lessThanAndroidQ()) {
                     "($COLUMN_MEDIA_TYPE=?" +
                             getGiftLimitSelection() +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
@@ -421,7 +422,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val path = c.getString(c.getColumnIndex(COLUMN_DATA))
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val contentUriPath = createContentPathUri(id).toString()
-        return if (GallaryCommon.lessThanAndroidQ()) {
+        return if (GalleryCommon.lessThanAndroidQ()) {
             val count = c.getInt(c.getColumnIndex("count"))
             BucketInfo(bucketId, bucketDisplayName, count, path, contentUriPath)
         } else {

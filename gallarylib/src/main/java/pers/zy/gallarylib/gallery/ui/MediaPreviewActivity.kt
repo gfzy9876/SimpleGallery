@@ -9,7 +9,7 @@ import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import pers.zy.gallarylib.databinding.ActivityMediaPreviewBinding
-import pers.zy.gallarylib.gallery.tools.GallaryCommon
+import pers.zy.gallarylib.gallery.tools.GalleryCommon
 import pers.zy.gallarylib.gallery.model.MediaInfo
 
 class MediaPreviewActivity : AppCompatActivity() {
@@ -40,7 +40,7 @@ class MediaPreviewActivity : AppCompatActivity() {
     }
 
     private fun initTitleBar() {
-        val statsBarHeight = GallaryCommon.getStatsBarHeight()
+        val statsBarHeight = GalleryCommon.getStatsBarHeight()
         binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
             height += statsBarHeight
         }

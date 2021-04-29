@@ -9,7 +9,7 @@ import pers.zy.gallarylib.BuildConfig
  * Have a nice day :)
  **/
 
-private const val TAG = "ZGalleryMedia"
+private const val TAG = "ZGalleryModel"
 
 fun d(msg: String) {
     if (BuildConfig.DEBUG) {
