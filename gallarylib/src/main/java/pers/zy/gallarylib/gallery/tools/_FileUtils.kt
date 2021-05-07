@@ -3,6 +3,7 @@ package pers.zy.gallarylib.gallery.tools
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -95,6 +96,44 @@ class FileUtils {
             }, {
                 GalleryCommon.app.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(dstFile)))
             })
+        }
+
+        fun savePhoto(srcBitmap: Bitmap, parentFilePath: String, dstFileName: String) {
+            val contentResolver = GalleryCommon.app.contentResolver
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val dstContentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, "${dstFileName}.jpg")
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separatorChar + parentFilePath)
+                    put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis())
+                }
+                val dstUri = contentResolver.insert(
+                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                    dstContentValues
+                )
+                dstUri?.let {
+                    val outs = contentResolver.openOutputStream(dstUri)
+                    srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outs)
+                    contentResolver.update(dstUri, dstContentValues, null, null)
+                    GalleryCommon.makeToast("保存图片成功: ")
+                }
+            } else {
+                val parentFile = Environment.getExternalStoragePublicDirectory(parentFilePath)
+                if (!parentFile.exists()) {
+                    parentFile.mkdirs()
+                }
+                val dstFile = File(parentFile, "$dstFileName.jpg")
+                d("savePhoto ${dstFile.path}")
+                d("savePhoto ${dstFile.absolutePath}")
+                d("savePhoto ${dstFile.invariantSeparatorsPath}")
+                d("savePhoto ${dstFile.canonicalPath}")
+                val dstUri = Uri.fromFile(dstFile)
+                val outs = contentResolver.openOutputStream(dstUri)
+                srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outs)
+                GalleryCommon.makeToast("保存图片成功: ")
+                GalleryCommon.app.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, dstUri))
+                outs?.close()
+            }
         }
         //保存图片end
 
