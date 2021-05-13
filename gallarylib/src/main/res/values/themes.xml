@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="GalleryStyle" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/color_transparent</item>
+    </style>
+
+    <style name="GalleryStyle.TransStyle">
+        <item name="android:windowBackground">@color/color_transparent</item>
+    </style>
+</resources>

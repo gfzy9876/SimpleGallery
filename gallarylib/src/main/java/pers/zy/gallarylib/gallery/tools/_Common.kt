@@ -38,7 +38,7 @@ object GalleryCommon {
 
 val Float.dp: Int
     get() {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryCommon.app.resources.displayMetrics).toInt()
+        return (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this, GalleryCommon.app.resources.displayMetrics) + 0.5f).toInt()
     }
 
 val Float.dpF: Float

@@ -1,4 +1,4 @@
-package pers.zy.gallarylib.gallery.ui;
+package pers.zy.gallarylib.gallery.ui.common;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;

@@ -21,11 +21,10 @@ class MediaInfo(
     var displayName: String,
     var width: Long,
     var height: Long,
-    var thumbnailPath: String? = null,
     var duration: Long = 0L
 ) : Parcelable {
 
-    fun createMediaInfoWrapper(): MediaInfoWrapper? {
+    internal fun createMediaInfoWrapper(): MediaInfoWrapper? {
         return when (mediaType) {
             GalleryMediaLoader.MEDIA_TYPE_IMAGE -> {
                 ImageMediaInfoWrapper(this)
@@ -55,7 +54,7 @@ class MediaInfo(
     }
 
     override fun toString(): String {
-        return "MediaInfo(" + "id=$id, " + "mediaType=$mediaType, " + "realPath='$realPath', " + "contentUriPath='$contentUriPath', " + "sendBoxPath='$sendBoxPath', " + "mimeType='$mimeType', " + "size=$size, " + "displayName='$displayName', " + "width=$width, " + "height=$height, " + "thumbnailPath=$thumbnailPath, " + "duration=$duration" + ")"
+        return "MediaInfo(id=$id, mediaType=$mediaType, realPath='$realPath', contentUriPath='$contentUriPath', sendBoxPath='$sendBoxPath', mimeType='$mimeType', size=$size, displayName='$displayName', width=$width, height=$height, duration=$duration)"
     }
 
 

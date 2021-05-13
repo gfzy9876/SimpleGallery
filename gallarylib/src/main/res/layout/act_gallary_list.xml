@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <FrameLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="pers.zy.gallarylib.gallery.ui.list.GalleryMediaListAct"
-        android:background="@color/color_33">
+        android:background="@color/color_33"
+        tools:context="pers.zy.gallarylib.gallery.ui.list.GalleryMediaListAct">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,38 +24,38 @@
                     android:id="@+id/ll_bucket_selector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_gravity="center_vertical"
-                    android:gravity="center"
-                    android:background="@drawable/shape_rc_4c_corner100"
                     android:layout_marginLeft="20dp"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
+                    android:background="@drawable/shape_rc_4c_corner100"
+                    android:gravity="center"
+                    android:orientation="horizontal"
                     android:paddingLeft="10dp"
-                    android:paddingRight="5dp">
+                    android:paddingTop="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="5dp">
 
                     <TextView
                         android:id="@+id/tv_bucket_selector"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="17sp"
-                        android:textColor="@color/color_white"
                         android:gravity="center"
                         android:includeFontPadding="false"
-                        android:text="所有"/>
+                        android:text="所有"
+                        android:textColor="@color/color_white"
+                        android:textSize="17sp" />
 
                     <FrameLayout
                         android:id="@+id/fl_bucket_arrow"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:background="@drawable/shape_rc_b2_corner100"
-                        android:layout_marginLeft="5dp">
+                        android:layout_marginLeft="5dp"
+                        android:background="@drawable/shape_rc_b2_corner100">
 
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:src="@drawable/arrow_bottom"
-                            android:tint="@color/color_2A"/>
+                            app:tint="@color/color_2A" />
 
                     </FrameLayout>
 
@@ -63,20 +63,10 @@
 
                 <TextView
                     android:id="@+id/tv_select_okay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:layout_gravity="center_vertical|end"
+                    style="@style/SelectButtonStyle"
+                    android:layout_marginEnd="6dp"
                     android:layout_marginRight="6dp"
-                    android:textSize="14sp"
-                    android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:textColor="@color/color_white"
-                    android:background="@drawable/shape_rc_unselect_media"
-                    android:text="完成"/>
+                    android:text="完成" />
 
             </FrameLayout>
 
@@ -87,21 +77,22 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_media"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:padding="2.5dp"/>
 
                 <FrameLayout
                     android:id="@+id/fl_bucket"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:focusable="true"
                     android:clickable="true"
+                    android:focusable="true"
                     android:visibility="invisible">
 
                     <pers.zy.gallarylib.gallery.ui.view.MaxHeightRecyclerView
                         android:id="@+id/rv_bucket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:maxRecyclerHeight="500dp"/>
+                        app:maxRecyclerHeight="500dp" />
 
                 </FrameLayout>
             </FrameLayout>
@@ -120,7 +111,7 @@
             <ProgressBar
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center" />
 
         </FrameLayout>
     </FrameLayout>

@@ -6,6 +6,7 @@ import pers.zy.gallarylib.databinding.ItemMediaRootBinding
 import pers.zy.gallarylib.databinding.ItemMediaImageBinding
 import pers.zy.gallarylib.gallery.model.ImageMediaInfoWrapper
 import pers.zy.gallarylib.gallery.model.MediaInfoWrapper
+import pers.zy.gallarylib.gallery.ui.list.GalleryMediaClickListener
 
 /**
  * date: 2020/6/7   time: 3:36 PM
@@ -14,8 +15,8 @@ import pers.zy.gallarylib.gallery.model.MediaInfoWrapper
  **/
 internal class MediaImageViewBinder(
     selectedMediaList: MutableList<MediaInfoWrapper>,
-    itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
-) : BaseMediaViewBinder<ImageMediaInfoWrapper, MediaImageViewBinder.ImageMediaViewHolder>(selectedMediaList, itemClick) {
+    listener: GalleryMediaClickListener
+) : BaseMediaViewBinder<ImageMediaInfoWrapper, MediaImageViewBinder.ImageMediaViewHolder>(selectedMediaList, listener) {
 
     override fun createViewHolder(
         inflater: LayoutInflater,

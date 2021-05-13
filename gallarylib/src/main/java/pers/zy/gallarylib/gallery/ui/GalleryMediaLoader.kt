@@ -27,7 +27,11 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     companion object {
         const val BUCKET_ID_NON_SELECTIVE = -1L
 
-        val QUERY_URL: Uri = MediaStore.Files.getContentUri("external")
+        val QUERY_URL: Uri = MediaStore.Files.getContentUri(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.VOLUME_EXTERNAL
+        } else {
+            "external"
+        })
 
         /**
          * MIME_TYPE
@@ -64,9 +68,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         const val DEFAULT_SORT = "${MediaStore.Files.FileColumns._ID} DESC"
     }
 
-    //默认选择所有文件
-    var selectBucketId: Long = BUCKET_ID_NON_SELECTIVE
-
     init {
         lifecycleOwner.lifecycle.addObserver(this)
     }
@@ -78,12 +79,14 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
 
     /**
      * @param mimeType 获取媒体类型: [MIME_TYPE_IMAGE] [MIME_TYPE_VIDEO] [MIME_TYPE_ALL]
+     * @param bucketId 文件夹id，默认不区分文件夹，选择所有文件
      * @param page 获取图片第几页
      * @param successCall
      * @param errorCall
      * */
     fun loadMedia(
         mimeType: Int,
+        bucketId: Long = BUCKET_ID_NON_SELECTIVE,
         @IntRange(from = 0) page: Int = 0,
         successCall: (List<MediaInfo>) -> Unit,
         errorCall: ((Throwable) -> Unit)? = null
@@ -100,17 +103,9 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 val cursor = GalleryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getMediaProjection(),
-                    getMediaSelection(mimeType),
+                    getMediaSelection(mimeType, bucketId),
                     getMediaSelectionArgs(mimeType),
-                    """
-                        $DEFAULT_SORT${
-                        if (MediaInfoConfig.pagingLoad) {
-                            " LIMIT ${page * MediaInfoConfig.perPage}, $MediaInfoConfig.perPage"
-                        } else {
-                            ""
-                        }
-                    }
-                    """.trimIndent()
+                    getSortOrder(page)
                 )
                 cursor?.let { c ->
                     if (!c.moveToFirst()) return@let
@@ -148,24 +143,24 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * media file 筛选条件(SQL)
      * */
-    private fun getMediaSelection(mimeType: Int): String {
+    private fun getMediaSelection(mimeType: Int, bucketId: Long): String {
         return when (mimeType) {
             MIME_TYPE_IMAGE -> {
-                if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
+                if (bucketId != BUCKET_ID_NON_SELECTIVE) {
                     "$COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
-                            " AND $COLUMN_BUCKET_ID=$selectBucketId" +
+                            getGifLimitSelection() +
+                            " AND $COLUMN_BUCKET_ID=$bucketId" +
                             " AND $COLUMN_SIZE>0"
                 } else {
                     "$COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " AND $COLUMN_SIZE>0"
                 }
             }
             MIME_TYPE_VIDEO -> {
-                if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
+                if (bucketId != BUCKET_ID_NON_SELECTIVE) {
                     "$COLUMN_MEDIA_TYPE=?" +
-                            " AND $COLUMN_BUCKET_ID=${selectBucketId}" +
+                            " AND $COLUMN_BUCKET_ID=${bucketId}" +
                             " AND $COLUMN_DURATION>0" +
                             " AND $COLUMN_SIZE>0"
                 } else {
@@ -175,16 +170,16 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 }
             }
             else ->  {
-                if (selectBucketId != BUCKET_ID_NON_SELECTIVE) {
+                if (bucketId != BUCKET_ID_NON_SELECTIVE) {
                     "($COLUMN_MEDIA_TYPE=?" +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
-                            " AND $COLUMN_BUCKET_ID=${selectBucketId}" +
-                            getGiftLimitSelection() +
+                            " AND $COLUMN_BUCKET_ID=${bucketId}" +
+                            getGifLimitSelection() +
                             " AND $COLUMN_SIZE>0"
                 } else {
                     "($COLUMN_MEDIA_TYPE=?" +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " AND $COLUMN_SIZE>0"
                 }
             }
@@ -211,11 +206,22 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }
     }
 
+    /**
+     * media file 排列方式：按id降序排列；以及是否需要分页
+     * */
+    private fun getSortOrder(page: Int): String {
+        return "$DEFAULT_SORT${if (MediaInfoConfig.pagingLoad) {
+            " LIMIT ${page * MediaInfoConfig.perPage}, $MediaInfoConfig.perPage"
+        } else {
+            ""
+        }}"
+    }
+
     private fun createMediaInfo(c: Cursor): MediaInfo {
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val realPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val contentUriPath = createContentPathUri(id).toString()
-        // 在返回时，sdk>=Q, 将sendBoxPath修改为沙盒路径的文件path
+        /** 在返回时，[Build.VERSION.SDK_INT]>=[Build.VERSION_CODES.Q], 将sendBoxPath修改为沙盒路径的文件path*/
         val sendBoxPath = realPath
         val mediaType = c.getInt(c.getColumnIndex(COLUMN_MEDIA_TYPE))
         val mimeType = c.getString(c.getColumnIndex(COLUMN_MIME_TYPE))
@@ -224,29 +230,8 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val size = c.getLong(c.getColumnIndex(COLUMN_SIZE))
         val displayName = c.getString(c.getColumnIndex(COLUMN_DISPLAY_NAME))
         val duration = c.getLong(c.getColumnIndex(COLUMN_DURATION))
-
-        if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-            val thumbCursor = GalleryCommon.app.contentResolver.query(
-                //TODO:ZY AndroidQ无法获取视频缩略图
-                MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
-                arrayOf(
-                    COLUMN_THUMB_DATA,
-                    COLUMN_ID
-                 ),
-                "$COLUMN_ID=$id",
-                null,
-                null
-            )
-            return if (thumbCursor != null && thumbCursor.moveToFirst()) {
-                val thumbnailsPath = thumbCursor.getString(thumbCursor.getColumnIndex(COLUMN_DATA))
-                thumbCursor.close()
-                MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, thumbnailsPath, duration)
-            } else {
-                MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, null, duration)
-            }
-        } else {
-            return MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, null, duration)
-        }
+        //TODO:ZY 考虑是否需要加上缩略图
+        return MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, duration)
     }
 
     /**
@@ -318,12 +303,12 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
             MIME_TYPE_IMAGE -> {
                 if (GalleryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " AND $COLUMN_SIZE>0)" +
                             " GROUP BY ($COLUMN_BUCKET_ID"
                 } else {
                     "$COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " AND $COLUMN_SIZE>0"
                 }
             }
@@ -340,13 +325,13 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
             else -> {
                 if (GalleryCommon.lessThanAndroidQ()) {
                     "($COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
                             " AND $COLUMN_SIZE>0)" +
                             " GROUP BY ($COLUMN_BUCKET_ID"
                 } else {
                     "($COLUMN_MEDIA_TYPE=?" +
-                            getGiftLimitSelection() +
+                            getGifLimitSelection() +
                             " OR $COLUMN_MEDIA_TYPE=?)" +
                             " AND $COLUMN_SIZE>0"
                 }
@@ -437,7 +422,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         return BucketInfo(BUCKET_ID_NON_SELECTIVE, "所有", 0, sumPreviewRealPath, sumPreviewContentUri.toString())
     }
 
-    private fun getGiftLimitSelection(): String {
+    private fun getGifLimitSelection(): String {
         return if (MediaInfoConfig.showGif) {
             " AND $COLUMN_MIME_TYPE!='image/gif'"
         } else {

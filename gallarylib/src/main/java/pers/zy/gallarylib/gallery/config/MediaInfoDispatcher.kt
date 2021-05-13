@@ -21,8 +21,7 @@ class MediaInfoDispatcher {
 
         fun start(context: Context, target: Any) {
             MediaInfoTargetBinding.bind(target)
-            val intent = Intent(context, GalleryMediaListAct::class.java).apply {
-            }
+            val intent = Intent(context, GalleryMediaListAct::class.java)
             if (context is Activity) {
                 context.startActivityForResult(intent, REQUEST_CODE_MEDIA_INFO)
             } else {
@@ -32,8 +31,7 @@ class MediaInfoDispatcher {
 
         fun start(context: Activity) {
             MediaInfoTargetBinding.bind(context)
-            val intent = Intent(context, GalleryMediaListAct::class.java).apply {
-            }
+            val intent = Intent(context, GalleryMediaListAct::class.java)
             context.startActivityForResult(intent, REQUEST_CODE_MEDIA_INFO)
         }
     }

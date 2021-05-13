@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="TitleBarLayout">
-        <attr name="leftIconRes" format="reference"/>
-        <attr name="rightIconRes" format="reference"/>
-        <attr name="iconTint" format="color|reference"/>
-        <attr name="titleText" format="string|reference"/>
-        <attr name="titleTextSize" format="dimension"/>
-        <attr name="titleTextColor" format="color|reference"/>
-    </declare-styleable>
 
     <declare-styleable name="MaxHeightRecyclerView">
         <attr name="maxRecyclerHeight" format="dimension"/>

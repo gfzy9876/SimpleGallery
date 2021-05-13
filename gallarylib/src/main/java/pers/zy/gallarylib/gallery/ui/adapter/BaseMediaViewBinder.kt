@@ -1,7 +1,6 @@
 package pers.zy.gallarylib.gallery.ui.adapter
 
 import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,12 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.drakeet.multitype.ItemViewBinder
 import pers.zy.gallarylib.R
 import pers.zy.gallarylib.databinding.ItemMediaRootBinding
 import pers.zy.gallarylib.gallery.model.MediaInfoWrapper
-import pers.zy.gallarylib.gallery.tools.d
+import pers.zy.gallarylib.gallery.ui.list.GalleryMediaClickListener
 
 /**
  * date: 2020/6/30   time: 12:30 PM
@@ -23,7 +21,7 @@ import pers.zy.gallarylib.gallery.tools.d
  **/
 internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMediaViewBinder.BaseMediaViewHolder<T>>(
     private val selectedWrapperList: MutableList<MediaInfoWrapper>,
-    private val itemClick: (wrapper: MediaInfoWrapper, position: Int) -> Unit
+    private val listener: GalleryMediaClickListener
 ) : ItemViewBinder<T, VH>() {
 
     companion object {
@@ -71,10 +69,12 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
             holder.rootBinding.selectMask.alpha = 0f
         }
         holder.rootBinding.root.setOnClickListener {
-            itemClick.invoke(item, holder.absoluteAdapterPosition)
+            listener.onMediaItemClick(item, holder.absoluteAdapterPosition)
+        }
+        holder.rootBinding.mediaCheckBox.setOnClickListener {
+            listener.onSwitchClick(item, holder.absoluteAdapterPosition)
         }
         updateMediaCheckBox(holder, item)
-        holder.rootBinding.tvTest.text = "" + holder.absoluteAdapterPosition
     }
 
     private fun updateMediaCheckBox(holder: VH, item: T) {

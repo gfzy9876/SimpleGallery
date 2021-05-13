@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,7 +20,7 @@ import com.drakeet.multitype.MultiTypeAdapter
 import com.tbruyelle.rxpermissions3.RxPermissions
 import kotlinx.coroutines.*
 import pers.zy.gallarylib.R
-import pers.zy.gallarylib.databinding.ActivityGallaryBinding
+import pers.zy.gallarylib.databinding.ActGallaryListBinding
 import pers.zy.gallarylib.gallery.tools.GalleryCommon
 import pers.zy.gallarylib.gallery.tools.FileUtils
 import pers.zy.gallarylib.gallery.ui.GalleryMediaLoader
@@ -27,21 +28,25 @@ import pers.zy.gallarylib.gallery.model.*
 import pers.zy.gallarylib.gallery.config.MediaInfoTargetBinding
 import pers.zy.gallarylib.gallery.config.MediaInfoConfig
 import pers.zy.gallarylib.gallery.config.MediaInfoDispatcher
+import pers.zy.gallarylib.gallery.tools.dp
 import pers.zy.gallarylib.gallery.tools.e
-import pers.zy.gallarylib.gallery.ui.EndlessRecyclerViewScrollListener
+import pers.zy.gallarylib.gallery.ui.common.EndlessRecyclerViewScrollListener
+import pers.zy.gallarylib.gallery.ui.preview.GalleryMediaPreviewAct
 import pers.zy.gallarylib.gallery.ui.adapter.*
 import pers.zy.gallarylib.gallery.ui.adapter.BaseMediaViewBinder
 import pers.zy.gallarylib.gallery.ui.adapter.MediaImageViewBinder
 import pers.zy.gallarylib.gallery.ui.adapter.MediaVideoViewBinder
+import kotlin.math.min
 
-class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
+class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, CoroutineScope by MainScope() {
 
     private val wrapperList = mutableListOf<Any>()
     private val selectedWrapperList = mutableListOf<MediaInfoWrapper>()
     private val bucketList = mutableListOf<BucketInfo>()
     private val cameraItem = CameraItem()
+    private var selectBucketId: Long = GalleryMediaLoader.BUCKET_ID_NON_SELECTIVE
 
-    private lateinit var binding: ActivityGallaryBinding
+    private lateinit var binding: ActGallaryListBinding
     private val mediaAdapter = MultiTypeAdapter(wrapperList)
     private val bucketAdapter = MultiTypeAdapter(bucketList)
     private lateinit var mediaLayoutManager: GridLayoutManager
@@ -69,7 +74,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.trans_from_bottom_enter_anim, 0)
-        this.binding = ActivityGallaryBinding.inflate(LayoutInflater.from(this))
+        this.binding = ActGallaryListBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         initView()
         initMediaLoader()
@@ -88,14 +93,64 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         cancel()
     }
 
+    override fun onSwitchClick(wrapper: MediaInfoWrapper, position: Int) {
+        checkSelectMediaItem(wrapper, position)
+    }
+
+    override fun onMediaItemClick(wrapper: MediaInfoWrapper, position: Int) {
+        if (MediaInfoConfig.clickPreview) {
+            val filterMediaInfoList = wrapperList.filterIsInstance<MediaInfoWrapper>().map { it.mediaInfo }
+            val selectedPosition = filterMediaInfoList.indexOf(wrapper.mediaInfo)
+            GalleryMediaPreviewAct.start(this,
+                selectedPosition,
+                filterMediaInfoList.size,
+                ArrayList(filterMediaInfoList.subList(0, min(20, filterMediaInfoList.size))),
+                selectBucketId
+            )
+        } else {
+            checkSelectMediaItem(wrapper, position)
+        }
+    }
+
+    private fun checkSelectMediaItem(wrapper: MediaInfoWrapper, position: Int) {
+        if (selectedWrapperList.size >= MediaInfoConfig.maxMediaCount && !wrapper.selected) {
+            GalleryCommon.makeToast("最多选择${MediaInfoConfig.maxMediaCount}个文件")
+            return
+        }
+        wrapper.selected = !wrapper.selected
+        if (wrapper.selected) {
+            selectedWrapperList.add(wrapper)
+        } else {
+            selectedWrapperList.remove(wrapper)
+        }
+        mediaAdapter.notifyItemChanged(position, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM)
+        val firstVisibleItemPosition = mediaLayoutManager.findFirstVisibleItemPosition()
+        val lastVisibleItemPosition = mediaLayoutManager.findLastVisibleItemPosition()
+        selectedWrapperList.forEach {
+            val index = wrapperList.indexOf(it)
+            if (index in firstVisibleItemPosition .. lastVisibleItemPosition) {
+                mediaAdapter.notifyItemChanged(index, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
+            }
+        }
+        binding.tvSelectOkay.apply {
+            if (selectedWrapperList.isEmpty()) {
+                isClickable = false
+                setBackgroundResource(R.drawable.shape_rc_unselect_media)
+            } else {
+                isClickable = true
+                setBackgroundResource(R.drawable.shape_rc_select_media)
+            }
+        }
+    }
+
     private fun initView() {
         binding.titleBar.layoutParams = (binding.titleBar.layoutParams as LinearLayout.LayoutParams).apply {
             height += GalleryCommon.getStatsBarHeight()
         }
         binding.titleBar.setPadding(0, GalleryCommon.getStatsBarHeight(), 0, 0)
 
-        mediaAdapter.register(ImageMediaInfoWrapper::class, MediaImageViewBinder(selectedWrapperList, ::mediaItemClick))
-        mediaAdapter.register(VideoMediaInfoWrapper::class, MediaVideoViewBinder(selectedWrapperList, ::mediaItemClick))
+        mediaAdapter.register(ImageMediaInfoWrapper::class, MediaImageViewBinder(selectedWrapperList, this))
+        mediaAdapter.register(VideoMediaInfoWrapper::class, MediaVideoViewBinder(selectedWrapperList, this))
         mediaAdapter.register(CameraItem::class, CameraViewBinder(::showCamera))
         mediaLayoutManager = GridLayoutManager(this@GalleryMediaListAct, MediaInfoConfig.columnCount)
         binding.rvMedia.apply {
@@ -108,12 +163,30 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
                     }
                 })
             }
+            addItemDecoration(object : RecyclerView.ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State
+                ) {
+                    val padding = 5f.dp
+                    outRect.left = padding / 2
+                    outRect.top = padding / 2
+                    outRect.right = padding / 2
+                    outRect.bottom = padding / 2
+                }
+            })
         }
         bucketAdapter.register(BucketInfo::class.java, BucketBinder { bucketInfo ->
             refreshBucketSelectorState(false)
-            if (galleryMediaLoader.selectBucketId != bucketInfo.id) {
+            if (selectBucketId != bucketInfo.id) {
                 binding.root.postDelayed({
-                    requestMediaWithBucketId(bucketInfo)
+                    binding.tvBucketSelector.text = bucketInfo.displayName
+                    selectBucketId = bucketInfo.id
+                    galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, successCall = {
+                        refreshMedia(it)
+                    })
                 }, 300)
                 bucketExitAnim.start()
             }
@@ -178,7 +251,6 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-
     private fun initMediaLoader() {
         galleryMediaLoader = GalleryMediaLoader(this)
         RxPermissions(this).request(
@@ -195,48 +267,14 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
             }
     }
 
-    private fun mediaItemClick(wrapper: MediaInfoWrapper, position: Int) {
-        if (selectedWrapperList.size >= MediaInfoConfig.maxMediaCount && !wrapper.selected) {
-            GalleryCommon.makeToast("最多选择${MediaInfoConfig.maxMediaCount}个文件")
-            return
-        }
-
-        wrapper.selected = !wrapper.selected
-        if (wrapper.selected) {
-            selectedWrapperList.add(wrapper)
-        } else {
-            selectedWrapperList.remove(wrapper)
-        }
-        mediaAdapter.notifyItemChanged(position, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX_WITH_ANIM)
-        val firstVisibleItemPosition = mediaLayoutManager.findFirstVisibleItemPosition()
-        val lastVisibleItemPosition = mediaLayoutManager.findLastVisibleItemPosition()
-        selectedWrapperList.forEach {
-            val index = wrapperList.indexOf(it)
-            if (index in firstVisibleItemPosition .. lastVisibleItemPosition) {
-                mediaAdapter.notifyItemChanged(index, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
-            }
-        }
-        binding.tvSelectOkay.apply {
-            if (selectedWrapperList.isEmpty()) {
-                isClickable = false
-                setBackgroundResource(R.drawable.shape_rc_unselect_media)
-            } else {
-                isClickable = true
-                setBackgroundResource(R.drawable.shape_rc_select_media)
-            }
-        }
-    }
-
     private fun showCamera() {
-
+        //TODO:ZY showCamera
     }
 
     private fun loadMedia() {
-        galleryMediaLoader.loadMedia(
-            MediaInfoConfig.mimeType,
-            successCall = {
-                refreshMedia(it)
-            })
+        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, successCall = {
+            refreshMedia(it)
+        })
         galleryMediaLoader.loadBucket(MediaInfoConfig.mimeType, {
             if (it.isNotEmpty()) {
                 bucketList.addAll(it)
@@ -258,14 +296,6 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun requestMediaWithBucketId(bucketInfo: BucketInfo) {
-        binding.tvBucketSelector.text = bucketInfo.displayName
-        galleryMediaLoader.selectBucketId = bucketInfo.id
-        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, successCall = {
-            refreshMedia(it)
-        })
-    }
-
     private fun refreshMedia(result: List<MediaInfo>) {
         wrapperList.clear()
         addResult(result)
@@ -273,7 +303,7 @@ class GalleryMediaListAct : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun loadMoreMedia(page: Int) {
-        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, page, successCall = {
+        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, page, successCall = {
             val oldSize = wrapperList.size
             addResult(it)
             if (wrapperList.size != oldSize) {
