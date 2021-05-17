@@ -97,11 +97,6 @@ internal abstract class BaseMediaViewBinder<T : MediaInfoWrapper, VH : BaseMedia
 
         val selectAnim: ObjectAnimator by lazy {
             //TODO:ZY 动画可配置
-//            ObjectAnimator.ofPropertyValuesHolder(rootBinding.ivMedia,
-//                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.1f),
-//                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.1f)).apply {
-//                    duration = 150
-//            }
             ObjectAnimator.ofFloat(rootBinding.selectMask, View.ALPHA, 0f, 0.6f).apply {
                 duration = 150
             }

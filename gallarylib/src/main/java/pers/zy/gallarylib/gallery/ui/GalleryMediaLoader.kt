@@ -237,7 +237,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * loadBucket
      * */
-
     fun loadBucket(
         mimeType: Int,
         bucketListCall: (List<BucketInfo>) -> Unit,
