@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/color_black">
 
+        <com.github.chrisbanes.photoview.PhotoView
+            android:id="@+id/iv_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
+        <ImageView
+            android:id="@+id/iv_play_video"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/play"
+            android:layout_gravity="center"
+            app:tint="@color/color_white"
+            android:visibility="gone"
+            tools:visibility="visible"/>
 
     </FrameLayout>
 

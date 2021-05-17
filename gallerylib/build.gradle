@@ -61,9 +61,9 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${config.appcompat}"
     implementation "androidx.recyclerview:recyclerview:${config.recyclerview}"
     implementation "androidx.viewpager2:viewpager2:${config.viewpager2}"
-    implementation "com.github.bumptech.glide:glide:${config.glide}"
     implementation "androidx.constraintlayout:constraintlayout:${config.constraintlayout}"
     implementation "com.drakeet.multitype:multitype:${config.multitype}"
+    implementation "com.github.chrisbanes:PhotoView:${config.photoView}"
 //    testImplementation 'junit:junit:4.12'
 //    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
 //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
@@ -73,6 +73,8 @@ dependencies {
     implementation "com.github.tbruyelle:rxpermissions:${config.rxpermissions}"
     implementation "io.reactivex.rxjava3:rxjava:${config.rxjava}"
     implementation "com.google.code.gson:gson:${config.gson}"
+    implementation "org.greenrobot:eventbus:${config.eventBus}"
+    implementation "com.github.bumptech.glide:glide:${config.glide}"
 
     api project(':apt-annotation')
 }

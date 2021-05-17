@@ -22,23 +22,21 @@ import kotlinx.coroutines.*
 import pers.zy.gallerylib.R
 import pers.zy.gallerylib.databinding.ActGalleryListBinding
 import pers.zy.gallerylib.tools.GalleryCommon
-import pers.zy.gallerylib.tools.FileUtils
 import pers.zy.gallerylib.ui.GalleryMediaLoader
 import pers.zy.gallerylib.model.*
-import pers.zy.gallerylib.config.MediaInfoTargetBinding
 import pers.zy.gallerylib.config.MediaInfoConfig
-import pers.zy.gallerylib.config.MediaInfoDispatcher
 import pers.zy.gallerylib.tools.dp
 import pers.zy.gallerylib.tools.e
+import pers.zy.gallerylib.ui.BaseGalleryMediaAct
+import pers.zy.gallerylib.ui.MediaInfoResultGenerator
 import pers.zy.gallerylib.ui.common.EndlessRecyclerViewScrollListener
 import pers.zy.gallerylib.ui.preview.GalleryMediaPreviewAct
 import pers.zy.gallerylib.ui.adapter.*
 import pers.zy.gallerylib.ui.adapter.BaseMediaViewBinder
 import pers.zy.gallerylib.ui.adapter.MediaImageViewBinder
 import pers.zy.gallerylib.ui.adapter.MediaVideoViewBinder
-import kotlin.math.min
 
-class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, CoroutineScope by MainScope() {
+class GalleryMediaListAct : BaseGalleryMediaAct(), GalleryMediaClickListener, CoroutineScope by MainScope() {
 
     private val wrapperList = mutableListOf<Any>()
     private val selectedWrapperList = mutableListOf<MediaInfoWrapper>()
@@ -80,6 +78,25 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
         initMediaLoader()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == GalleryMediaPreviewAct.REQUEST_CODE_SHOW_MEDIA_PREVIEW
+            && resultCode == GalleryMediaPreviewAct.RESULT_CODE_SHOW_MEDIA_PREVIEW) {
+            val resultSelectMediaInfoList = GalleryMediaPreviewAct.getSelectedMediaInfoList(data)
+            selectedWrapperList.clear()
+            wrapperList.filterIsInstance<MediaInfoWrapper>().forEach {
+                if (resultSelectMediaInfoList.contains(it.mediaInfo)) {
+                    it.selected = true
+                    selectedWrapperList.add(it)
+                } else {
+                    it.selected = false
+                }
+            }
+            mediaAdapter.notifyDataSetChanged()
+            updateTvSelectOkayUI()
+        }
+    }
+
     override fun finish() {
         super.finish()
         overridePendingTransition(0, R.anim.trans_from_bottom_exit_anim)
@@ -100,12 +117,11 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
     override fun onMediaItemClick(wrapper: MediaInfoWrapper, position: Int) {
         if (MediaInfoConfig.clickPreview) {
             val filterMediaInfoList = wrapperList.filterIsInstance<MediaInfoWrapper>().map { it.mediaInfo }
-            val selectedPosition = filterMediaInfoList.indexOf(wrapper.mediaInfo)
+            val currentSelectedPosition = filterMediaInfoList.indexOf(wrapper.mediaInfo)
             GalleryMediaPreviewAct.start(this,
-                selectedPosition,
-                filterMediaInfoList.size,
-                ArrayList(filterMediaInfoList.subList(0, min(20, filterMediaInfoList.size))),
-                selectBucketId
+                currentSelectedPosition,
+                filterMediaInfoList,
+                ArrayList(selectedWrapperList.map { it.mediaInfo })
             )
         } else {
             checkSelectMediaItem(wrapper, position)
@@ -132,6 +148,10 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
                 mediaAdapter.notifyItemChanged(index, BaseMediaViewBinder.PAYLOADS_UPDATE_SELECTED_INDEX)
             }
         }
+        updateTvSelectOkayUI()
+    }
+
+    private fun updateTvSelectOkayUI() {
         binding.tvSelectOkay.apply {
             if (selectedWrapperList.isEmpty()) {
                 isClickable = false
@@ -184,7 +204,7 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
                 binding.root.postDelayed({
                     binding.tvBucketSelector.text = bucketInfo.displayName
                     selectBucketId = bucketInfo.id
-                    galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, successCall = {
+                    galleryMediaLoader.loadMedia(MediaInfoConfig.selectMimeType, selectBucketId, successCall = {
                         refreshMedia(it)
                     })
                 }, 300)
@@ -219,35 +239,8 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
             val result = ArrayList(selectedWrapperList.map {
                 it.mediaInfo
             })
-            if (GalleryCommon.lessThanAndroidQ()) {
-                setMediaInfoResultAndFinish(result)
-            } else {
-                createSendBoxFile(result)
-            }
-        }
-    }
-
-    private fun setMediaInfoResultAndFinish(result: ArrayList<MediaInfo>) {
-        val invoked = MediaInfoTargetBinding.invokeProxy(MediaInfoConfig.targetName, result)
-        if (!invoked) {
-            setResult(MediaInfoDispatcher.RESULT_CODE_MEDIA_INFO, Intent().apply {
-                putParcelableArrayListExtra(MediaInfoDispatcher.EXTRA_RESULT_MEDIA_INFO, result)
-            })
-        }
-        finish()
-    }
-
-    private fun createSendBoxFile(result: ArrayList<MediaInfo>) {
-        binding.flProgress.visibility = View.VISIBLE
-        launch(coroutineContext) {
-            withContext(coroutineContext + Dispatchers.IO) {
-                result.forEach {
-                    val sendBoxFile = FileUtils.createSendBoxFileAndroidQ(it)
-                    it.sendBoxPath = sendBoxFile.path
-                }
-            }
-            binding.flProgress.visibility = View.GONE
-            setMediaInfoResultAndFinish(result)
+            binding.includeProgress.flProgress.visibility = View.VISIBLE
+            MediaInfoResultGenerator.generateMediaInfoResult(this, result)
         }
     }
 
@@ -272,10 +265,10 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
     }
 
     private fun loadMedia() {
-        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, successCall = {
+        galleryMediaLoader.loadMedia(MediaInfoConfig.selectMimeType, selectBucketId, successCall = {
             refreshMedia(it)
         })
-        galleryMediaLoader.loadBucket(MediaInfoConfig.mimeType, {
+        galleryMediaLoader.loadBucket(MediaInfoConfig.selectMimeType, {
             if (it.isNotEmpty()) {
                 bucketList.addAll(it)
                 bucketAdapter.notifyDataSetChanged()
@@ -303,7 +296,7 @@ class GalleryMediaListAct : AppCompatActivity(), GalleryMediaClickListener, Coro
     }
 
     private fun loadMoreMedia(page: Int) {
-        galleryMediaLoader.loadMedia(MediaInfoConfig.mimeType, selectBucketId, page, successCall = {
+        galleryMediaLoader.loadMedia(MediaInfoConfig.selectMimeType, selectBucketId, page, successCall = {
             val oldSize = wrapperList.size
             addResult(it)
             if (wrapperList.size != oldSize) {

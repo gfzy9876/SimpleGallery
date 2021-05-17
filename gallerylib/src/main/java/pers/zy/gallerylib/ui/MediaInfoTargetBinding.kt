@@ -1,4 +1,4 @@
-package pers.zy.gallerylib.config
+package pers.zy.gallerylib.ui
 
 import pers.zy.apt_annotation.MediaInfoConstants
 import pers.zy.gallerylib.model.MediaInfo

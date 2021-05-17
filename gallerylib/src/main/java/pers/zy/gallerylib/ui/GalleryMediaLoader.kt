@@ -21,8 +21,7 @@ import pers.zy.gallerylib.model.BucketInfo
  * author zy
  * Have a nice day :)
  **/
-class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by MainScope(),
-    LifecycleObserver {
+class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by MainScope(), LifecycleObserver {
 
     companion object {
         const val BUCKET_ID_NON_SELECTIVE = -1L
@@ -34,11 +33,11 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         })
 
         /**
-         * MIME_TYPE
+         * SELECT_MIME_TYPE
          * */
-        const val MIME_TYPE_IMAGE = 1
-        const val MIME_TYPE_VIDEO = 2
-        const val MIME_TYPE_ALL = 3
+        const val SELECT_MIME_TYPE_IMAGE = 1
+        const val SELECT_MIME_TYPE_VIDEO = 2
+        const val SELECT_MIME_TYPE_ALL = 3
 
         /**
          * Media type
@@ -78,14 +77,12 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     }
 
     /**
-     * @param mimeType 获取媒体类型: [MIME_TYPE_IMAGE] [MIME_TYPE_VIDEO] [MIME_TYPE_ALL]
+     * @param selectMimeType 获取媒体类型: [SELECT_MIME_TYPE_IMAGE] [SELECT_MIME_TYPE_VIDEO] [SELECT_MIME_TYPE_ALL]
      * @param bucketId 文件夹id，默认不区分文件夹，选择所有文件
      * @param page 获取图片第几页
-     * @param successCall
-     * @param errorCall
      * */
     fun loadMedia(
-        mimeType: Int,
+        selectMimeType: Int,
         bucketId: Long = BUCKET_ID_NON_SELECTIVE,
         @IntRange(from = 0) page: Int = 0,
         successCall: (List<MediaInfo>) -> Unit,
@@ -103,8 +100,8 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 val cursor = GalleryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getMediaProjection(),
-                    getMediaSelection(mimeType, bucketId),
-                    getMediaSelectionArgs(mimeType),
+                    getMediaSelection(selectMimeType, bucketId),
+                    getMediaSelectionArgs(selectMimeType),
                     getSortOrder(page)
                 )
                 cursor?.let { c ->
@@ -143,9 +140,9 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * media file 筛选条件(SQL)
      * */
-    private fun getMediaSelection(mimeType: Int, bucketId: Long): String {
-        return when (mimeType) {
-            MIME_TYPE_IMAGE -> {
+    private fun getMediaSelection(selectMimeType: Int, bucketId: Long): String {
+        return when (selectMimeType) {
+            SELECT_MIME_TYPE_IMAGE -> {
                 if (bucketId != BUCKET_ID_NON_SELECTIVE) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             getGifLimitSelection() +
@@ -157,7 +154,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                             " AND $COLUMN_SIZE>0"
                 }
             }
-            MIME_TYPE_VIDEO -> {
+            SELECT_MIME_TYPE_VIDEO -> {
                 if (bucketId != BUCKET_ID_NON_SELECTIVE) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             " AND $COLUMN_BUCKET_ID=${bucketId}" +
@@ -189,12 +186,12 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * media file 筛选条件value，对应筛选条件[getMediaSelection]中 '=?'
      * */
-    private fun getMediaSelectionArgs(mimeType: Int): Array<String>? {
-        return when (mimeType) {
-            MIME_TYPE_IMAGE -> {
+    private fun getMediaSelectionArgs(selectMimeType: Int): Array<String>? {
+        return when (selectMimeType) {
+            SELECT_MIME_TYPE_IMAGE -> {
                 arrayOf(MEDIA_TYPE_IMAGE.toString())
             }
-            MIME_TYPE_VIDEO -> {
+            SELECT_MIME_TYPE_VIDEO -> {
                 arrayOf(MEDIA_TYPE_VIDEO.toString())
             }
             else -> {
@@ -236,10 +233,11 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
 
     /**
      * loadBucket
+     * @param selectMimeType 获取媒体类型: [SELECT_MIME_TYPE_IMAGE] [SELECT_MIME_TYPE_VIDEO] [SELECT_MIME_TYPE_ALL]
      * */
     fun loadBucket(
-        mimeType: Int,
-        bucketListCall: (List<BucketInfo>) -> Unit,
+        selectMimeType: Int,
+        successCall: (List<BucketInfo>) -> Unit,
         errorCall: ((Throwable) -> Unit)? = null
     ) {
         launch(coroutineContext + CoroutineExceptionHandler { _, throwable ->
@@ -254,8 +252,8 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 val cursor = GalleryCommon.app.contentResolver.query(
                     QUERY_URL,
                     getBucketProjection(),
-                    getBucketSelection(mimeType),
-                    getBucketSelectionArgs(mimeType),
+                    getBucketSelection(selectMimeType),
+                    getBucketSelectionArgs(selectMimeType),
                     DEFAULT_SORT
                 )
                 cursor?.let { c ->
@@ -268,7 +266,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 cursor?.close()
                 return@withContext resultList
             }
-            bucketListCall.invoke(result)
+            successCall.invoke(result)
         }
     }
 
@@ -297,9 +295,9 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * bucket file 筛选条件
      * */
-    private fun getBucketSelection(mimeType: Int): String {
-        return when (mimeType) {
-            MIME_TYPE_IMAGE -> {
+    private fun getBucketSelection(selectMimeType: Int): String {
+        return when (selectMimeType) {
+            SELECT_MIME_TYPE_IMAGE -> {
                 if (GalleryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             getGifLimitSelection() +
@@ -311,7 +309,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                             " AND $COLUMN_SIZE>0"
                 }
             }
-            MIME_TYPE_VIDEO -> {
+            SELECT_MIME_TYPE_VIDEO -> {
                 if (GalleryCommon.lessThanAndroidQ()) {
                     "$COLUMN_MEDIA_TYPE=?" +
                             " AND $COLUMN_SIZE>0)" +
@@ -342,12 +340,12 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     /**
      * bucket file 筛选条件value，对应筛选条件[getBucketSelection]中 '=?'
      * */
-    private fun getBucketSelectionArgs(mimeType: Int): Array<String>? {
-        return when (mimeType) {
-            MIME_TYPE_IMAGE -> {
+    private fun getBucketSelectionArgs(selectMimeType: Int): Array<String> {
+        return when (selectMimeType) {
+            SELECT_MIME_TYPE_IMAGE -> {
                 arrayOf(MEDIA_TYPE_IMAGE.toString())
             }
-            MIME_TYPE_VIDEO -> {
+            SELECT_MIME_TYPE_VIDEO -> {
                 arrayOf(MEDIA_TYPE_VIDEO.toString())
             }
             else -> {

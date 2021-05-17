@@ -12,11 +12,11 @@ class MediaInfoConfig {
     companion object {
         @JvmStatic var minMediaCount: Int = 1 //最少选择文件数量
         @JvmStatic var maxMediaCount: Int = 9 //最大选择文件数量
-        @JvmStatic var mimeType: Int = GalleryMediaLoader.MIME_TYPE_ALL
+        @JvmStatic var selectMimeType: Int = GalleryMediaLoader.SELECT_MIME_TYPE_ALL
         /** 选择文件类型:
-         *  图片 @see[GalleryMediaLoader.MIME_TYPE_IMAGE]
-         *  视频 @see[GalleryMediaLoader.MIME_TYPE_VIDEO]
-         *  全部 @see[GalleryMediaLoader.MIME_TYPE_ALL]
+         *  图片 @see[GalleryMediaLoader.SELECT_MIME_TYPE_IMAGE]
+         *  视频 @see[GalleryMediaLoader.SELECT_MIME_TYPE_VIDEO]
+         *  全部 @see[GalleryMediaLoader.SELECT_MIME_TYPE_ALL]
          **/
         @JvmStatic var showCamera: Boolean = true //列表是否显示相机
         @JvmStatic var columnCount: Int = 4 //列表每行图片数量

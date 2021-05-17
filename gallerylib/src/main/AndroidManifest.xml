@@ -15,7 +15,8 @@
         <activity
             android:name="pers.zy.gallerylib.ui.preview.GalleryMediaPreviewAct"
             android:theme="@style/GalleryStyle"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask"/>
     </application>
 
     <queries>

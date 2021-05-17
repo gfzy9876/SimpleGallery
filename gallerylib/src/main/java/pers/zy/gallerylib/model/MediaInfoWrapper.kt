@@ -6,7 +6,7 @@ package pers.zy.gallerylib.model
  * Have a nice day :)
  **/
 abstract class MediaInfoWrapper(val mediaInfo: MediaInfo, var selected: Boolean = false) {
-    override fun hashCode(): Int = mediaInfo.toString().hashCode()
+    override fun hashCode(): Int = mediaInfo.id.hashCode()
 
     override fun equals(other: Any?): Boolean {
         return if (other is MediaInfoWrapper) {

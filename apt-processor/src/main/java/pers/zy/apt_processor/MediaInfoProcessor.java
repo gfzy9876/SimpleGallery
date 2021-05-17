@@ -68,7 +68,7 @@ public class MediaInfoProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        System.out.println("process");
+        System.out.println("process " + annotations.isEmpty());
         for (Element element : roundEnv.getElementsAnnotatedWith(MediaInfoReceived.class)) {
             ExecutableElement executableElement = (ExecutableElement) element;
             try {

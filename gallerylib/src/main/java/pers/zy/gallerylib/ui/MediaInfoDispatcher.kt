@@ -1,9 +1,9 @@
-package pers.zy.gallerylib.config
+package pers.zy.gallerylib.ui
 
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import pers.zy.gallerylib.ui.GalleryMediaLoader
+import pers.zy.gallerylib.config.MediaInfoConfig
 import pers.zy.gallerylib.ui.list.GalleryMediaListAct
 
 /**
@@ -47,17 +47,17 @@ class MediaInfoDispatcher {
     }
 
     fun ofImage(): MediaInfoDispatcher {
-        MediaInfoConfig.mimeType = GalleryMediaLoader.MIME_TYPE_IMAGE
+        MediaInfoConfig.selectMimeType = GalleryMediaLoader.SELECT_MIME_TYPE_IMAGE
         return this
     }
 
     fun ofVideo(): MediaInfoDispatcher {
-        MediaInfoConfig.mimeType = GalleryMediaLoader.MIME_TYPE_VIDEO
+        MediaInfoConfig.selectMimeType = GalleryMediaLoader.SELECT_MIME_TYPE_VIDEO
         return this
     }
 
     fun ofMediaAll(): MediaInfoDispatcher {
-        MediaInfoConfig.mimeType = GalleryMediaLoader.MIME_TYPE_ALL
+        MediaInfoConfig.selectMimeType = GalleryMediaLoader.SELECT_MIME_TYPE_ALL
         return this
     }
 

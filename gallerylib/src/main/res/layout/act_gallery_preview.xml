@@ -10,18 +10,19 @@
             type="java.lang.String" />
     </data>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/color_black"
         tools:context=".ui.preview.GalleryMediaPreviewAct">
 
         <FrameLayout
             android:id="@+id/fl_title_bar"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@color/color_33">
+            android:layout_height="44dp"
+            android:background="@color/color_33"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vp_preview">
 
             <ImageView
                 android:id="@+id/iv_left_icon"
@@ -45,6 +46,7 @@
             <TextView
                 android:id="@+id/tv_select"
                 style="@style/SelectButtonStyle"
+                android:background="@drawable/shape_rc_select_media"
                 android:layout_marginRight="6dp"
                 android:layout_marginEnd="6dp"
                 android:text="选择"/>
@@ -54,7 +56,53 @@
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/vp_preview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="0dp"
+            tools:background="@color/color_black"
+            app:layout_constraintTop_toBottomOf="@id/fl_title_bar"
+            app:layout_constraintBottom_toTopOf="@id/fl_bottom_menu"/>
 
-    </LinearLayout>
+        <FrameLayout
+            android:id="@+id/fl_bottom_menu"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@color/color_33"
+            app:layout_constraintTop_toBottomOf="@id/vp_preview"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:id="@+id/ll_select"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical|end"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginRight="5dp">
+
+                <ImageView
+                    android:id="@+id/iv_select"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical|end"
+                    android:src="@drawable/shape_oval_c9_stroke1"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|end"
+                    android:textColor="@color/color_white"
+                    android:textSize="17sp"
+                    android:text="选择"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp" />
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <include
+            android:id="@+id/include_progress"
+            layout="@layout/include_progress"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
