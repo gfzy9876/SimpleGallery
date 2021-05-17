@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_33"
+        tools:context=".ui.list.GalleryMediaListAct">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/title_bar"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@color/color_33">
+
+                <LinearLayout
+                    android:id="@+id/ll_bucket_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/shape_rc_4c_corner100"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingBottom="5dp">
+
+                    <TextView
+                        android:id="@+id/tv_bucket_selector"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:text="所有"
+                        android:textColor="@color/color_white"
+                        android:textSize="17sp" />
+
+                    <FrameLayout
+                        android:id="@+id/fl_bucket_arrow"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@drawable/shape_rc_b2_corner100">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/arrow_bottom"
+                            app:tint="@color/color_2A" />
+
+                    </FrameLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_select_okay"
+                    style="@style/SelectButtonStyle"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"
+                    android:text="完成" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_media"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="2.5dp"/>
+
+                <FrameLayout
+                    android:id="@+id/fl_bucket"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="invisible">
+
+                    <pers.zy.gallerylib.ui.view.MaxHeightRecyclerView
+                        android:id="@+id/rv_bucket"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:maxRecyclerHeight="500dp" />
+
+                </FrameLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/fl_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ProgressBar
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
+    </FrameLayout>
+</layout>

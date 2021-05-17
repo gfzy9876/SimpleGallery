@@ -7,9 +7,9 @@ import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import pers.zy.apt_annotation.MediaInfoReceived
-import pers.zy.gallarylib.gallery.config.MediaInfoDispatcher
-import pers.zy.gallarylib.gallery.model.MediaInfo
-import pers.zy.gallarylib.gallery.tools.d
+import pers.zy.gallerylib.config.MediaInfoDispatcher
+import pers.zy.gallerylib.model.MediaInfo
+import pers.zy.gallerylib.tools.d
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,7 +1,8 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'maven-publish'
 
 android {
     dataBinding {
@@ -10,14 +11,13 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId "pers.zy.gallerymodel"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
 
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -33,22 +33,46 @@ android {
     }
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = 'pers.zy.gallerymodel'
+                artifactId = 'gallerylib'
+//                version = '1.0.0.beta4'
+                from components.release
+            }
+            debug(MavenPublication) {
+                groupId = 'pers.zy.gallerymodel'
+                artifactId = 'gallerylib'
+//                version = '1.0.0.beta4'
+                from components.debug
+            }
+        }
+    }
+}
+
 dependencies {
     def config = rootProject.ext.dependencies
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "androidx.multidex:multidex:2.0.1"
 
     implementation "androidx.core:core-ktx:${config.core_ktx}"
     implementation "androidx.appcompat:appcompat:${config.appcompat}"
     implementation "androidx.recyclerview:recyclerview:${config.recyclerview}"
-    implementation "androidx.constraintlayout:constraintlayout:${config.constraintlayout}"
-//    testImplementation 'junit:junit:4.12'
-//    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation "com.google.code.gson:gson:${config.gson}"
+    implementation "androidx.viewpager2:viewpager2:${config.viewpager2}"
     implementation "com.github.bumptech.glide:glide:${config.glide}"
+    implementation "androidx.constraintlayout:constraintlayout:${config.constraintlayout}"
+    implementation "com.drakeet.multitype:multitype:${config.multitype}"
+//    testImplementation 'junit:junit:4.12'
+//    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation project(':gallerylib')
-    implementation project(':apt-processor')
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${config.kotlinx_coroutines_core}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${config.kotlinx_coroutines_android}"
+    implementation "com.github.tbruyelle:rxpermissions:${config.rxpermissions}"
+    implementation "io.reactivex.rxjava3:rxjava:${config.rxjava}"
+    implementation "com.google.code.gson:gson:${config.gson}"
+
+    api project(':apt-annotation')
 }

@@ -1,2 +1,2 @@
-include ':app', ':apt-processor', ':gallarylib', ':apt-annotation'
+include ':app', ':apt-processor', ':gallerylib', ':apt-annotation'
 rootProject.name = "GalleryModel"

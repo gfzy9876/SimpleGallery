@@ -91,7 +91,7 @@ public class MediaInfoProcessor extends AbstractProcessor {
          * */
         //1.
         ClassName list = ClassName.get("java.util", "List");
-        ClassName mediaInfo = ClassName.get("pers.zy.gallarylib.gallery.model", "MediaInfo");
+        ClassName mediaInfo = ClassName.get("pers.zy.gallerylib.model", "MediaInfo");
         TypeName parameterizedTypeName = ParameterizedTypeName.get(list, mediaInfo);
         ParameterSpec build = ParameterSpec.builder(parameterizedTypeName, "list").build();
         //2.

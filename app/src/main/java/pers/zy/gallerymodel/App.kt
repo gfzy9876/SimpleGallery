@@ -2,7 +2,7 @@ package pers.zy.gallerymodel
 
 import android.app.Application
 import androidx.multidex.MultiDex
-import pers.zy.gallarylib.gallery.tools.GalleryCommon
+import pers.zy.gallerylib.tools.GalleryCommon
 
 /**
  * date: 4/16/21   time: 6:41 PM
