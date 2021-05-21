@@ -18,7 +18,7 @@ object GalleryCommon {
         this.app = app
     }
 
-    fun getStatsBarHeight(): Int {
+    internal fun getStatsBarHeight(): Int {
         var height = 0
         val resId = app.resources.getIdentifier("status_bar_height", "dimen", "android")
         if (resId > 0) {
@@ -27,11 +27,11 @@ object GalleryCommon {
         return height
     }
 
-    fun getScreenHeight(): Int = app.resources.displayMetrics.heightPixels
+    internal fun getScreenHeight(): Int = app.resources.displayMetrics.heightPixels
 
-    fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+    internal fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
-    fun makeToast(msg: String) {
+    internal fun makeToast(msg: String) {
         Toast.makeText(app, msg, Toast.LENGTH_SHORT).show()
     }
 }

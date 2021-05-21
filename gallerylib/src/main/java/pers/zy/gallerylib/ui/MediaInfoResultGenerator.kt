@@ -10,7 +10,7 @@ import org.greenrobot.eventbus.EventBus
 import pers.zy.gallerylib.config.MediaInfoConfig
 import pers.zy.gallerylib.events.GalleryMediaInfoFinishEvent
 import pers.zy.gallerylib.model.MediaInfo
-import pers.zy.gallerylib.tools.FileUtils
+import pers.zy.gallerylib.tools.GalleryFileUtils
 import pers.zy.gallerylib.tools.GalleryCommon
 
 /**
@@ -18,10 +18,9 @@ import pers.zy.gallerylib.tools.GalleryCommon
  * author zy
  * Have a nice day :)
  **/
-class MediaInfoResultGenerator {
+internal class MediaInfoResultGenerator {
     companion object {
-        fun generateMediaInfoResult(activity: Activity,
-                                    result: ArrayList<MediaInfo>) {
+        fun generateMediaInfoResult(activity: Activity, result: ArrayList<MediaInfo>) {
             if (GalleryCommon.lessThanAndroidQ()) {
                 setMediaInfoResultAndFinish(activity, result)
             } else {
@@ -36,16 +35,17 @@ class MediaInfoResultGenerator {
                     putParcelableArrayListExtra(MediaInfoDispatcher.EXTRA_RESULT_MEDIA_INFO, result)
                 })
             }
-            EventBus.getDefault().post(GalleryMediaInfoFinishEvent(result))
+            EventBus.getDefault().post(GalleryMediaInfoFinishEvent())
         }
 
         private fun createSendBoxFile(activity: Activity, result: ArrayList<MediaInfo>) {
             activity as CoroutineScope
             activity.launch(activity.coroutineContext) {
                 withContext(coroutineContext + Dispatchers.IO) {
-                    result.forEach {
-                        val sendBoxFile = FileUtils.createSendBoxFileAndroidQ(it)
-                        it.sendBoxPath = sendBoxFile.path
+                    result.forEach { mediaInfo ->
+                        GalleryFileUtils.generateSendBoxFile(mediaInfo) {
+                            mediaInfo.sendBoxPath = it
+                        }
                     }
                 }
                 setMediaInfoResultAndFinish(activity, result)

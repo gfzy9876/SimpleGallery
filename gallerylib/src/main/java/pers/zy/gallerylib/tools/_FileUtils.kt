@@ -1,21 +1,13 @@
 package pers.zy.gallerylib.tools
 
 import android.content.ContentResolver
-import android.content.ContentValues
-import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.FileFilterUtils
 import pers.zy.gallerylib.model.MediaInfo
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 
 /**
  * date: 2020/6/29   time: 12:22 PM
@@ -23,125 +15,45 @@ import java.io.OutputStream
  * Have a nice day :)
  **/
 
-class FileUtils {
+class GalleryFileUtils {
     companion object {
         private val SEND_BOX_DIR = GalleryCommon.app.externalCacheDir!!.absolutePath +
                 "${File.separatorChar}" +
                 "GalleryModel"
         init {
-            val file = File(SEND_BOX_DIR)
-            if (!file.exists()) {
-                file.mkdirs()
+            val dir = File(SEND_BOX_DIR)
+            if (!dir.exists()) {
+                dir.mkdirs()
             }
         }
 
-        fun createSendBoxFileAndroidQ(mediaInfo: MediaInfo): File {
-            val sendBoxFile = File("${SEND_BOX_DIR}${File.separatorChar}cache_file_${mediaInfo.displayName}")
-            ioCopyFile({
-                GalleryCommon.app.contentResolver.openInputStream(Uri.parse(mediaInfo.contentUriPath))
-            }, {
-                FileOutputStream(sendBoxFile)
-            }, { })
-            return sendBoxFile
-        }
+        internal fun generateSendBoxFile(mediaInfo: MediaInfo, sendBoxFilePathCall: (String) -> Unit) {
+            val dir = File(SEND_BOX_DIR)
+            val sourceFile = File(mediaInfo.realPath)
+            val sourceFileLength = sourceFile.length()
+            var findSameFile = false
 
-
-        /**
-         * 保存图片
-         * */
-        fun savePhoto(srcUri: Uri, parentFileName: String, dstFileName: String) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                savePhotosGreaterOrEqualQ(srcUri, parentFileName, dstFileName)
-            } else {
-                savePhotoBelowQ(srcUri, parentFileName, dstFileName)
-            }
-        }
-
-        @RequiresApi(Build.VERSION_CODES.Q)
-        private fun savePhotosGreaterOrEqualQ(srcUri: Uri, parentFileName: String, dstFileName: String) {
-            val contentResolver = GalleryCommon.app.contentResolver
-            val dstContentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "${dstFileName}.${getFileExtensionFromUri(srcUri)}")
-                put(MediaStore.MediaColumns.MIME_TYPE, getMimeTypeFromUri(srcUri))
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separatorChar + parentFileName)
-                put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis())
-            }
-            val dstUri = contentResolver.insert(
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-                dstContentValues
-            ) ?: return
-
-            ioCopyFile({
-                contentResolver.openInputStream(srcUri)
-            }, {
-                contentResolver.openOutputStream(dstUri)
-            }, {
-                contentResolver.update(dstUri, dstContentValues, null, null)
-            })
-        }
-
-        private fun savePhotoBelowQ(srcUri: Uri, parentFileName: String, dstFileName: String) {
-            val parent = Environment.getExternalStoragePublicDirectory(parentFileName)
-            if (!parent.exists()) {
-                parent.mkdirs()
-            }
-            val dstFile = File(parent, "${dstFileName}${getFileExtensionFromUri(srcUri)}")
-            if (!dstFile.exists()) {
-                dstFile.createNewFile()
-            }
-            ioCopyFile({
-                GalleryCommon.app.contentResolver.openInputStream(srcUri)
-            }, {
-                FileOutputStream(dstFile)
-            }, {
-                GalleryCommon.app.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(dstFile)))
-            })
-        }
-
-        fun savePhoto(srcBitmap: Bitmap, parentFilePath: String, dstFileName: String) {
-            val contentResolver = GalleryCommon.app.contentResolver
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val dstContentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, "${dstFileName}.jpg")
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separatorChar + parentFilePath)
-                    put(MediaStore.MediaColumns.DATE_ADDED, System.currentTimeMillis())
+            dir.listFiles(FileFilterUtils.suffixFileFilter(
+                getFileExtensionFromUri(Uri.parse(mediaInfo.realPath))) as FilenameFilter
+            )?.forEach {
+                if (sourceFileLength == it.length()
+                    && sourceFile.name == it.name
+                ) {
+                    sendBoxFilePathCall(it.absolutePath)
+                    findSameFile = true
                 }
-                val dstUri = contentResolver.insert(
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-                    dstContentValues
-                )
-                dstUri?.let {
-                    val outs = contentResolver.openOutputStream(dstUri)
-                    srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outs)
-                    contentResolver.update(dstUri, dstContentValues, null, null)
-                    GalleryCommon.makeToast("保存图片成功: ")
-                }
-            } else {
-                val parentFile = Environment.getExternalStoragePublicDirectory(parentFilePath)
-                if (!parentFile.exists()) {
-                    parentFile.mkdirs()
-                }
-                val dstFile = File(parentFile, "$dstFileName.jpg")
-                d("savePhoto ${dstFile.path}")
-                d("savePhoto ${dstFile.absolutePath}")
-                d("savePhoto ${dstFile.invariantSeparatorsPath}")
-                d("savePhoto ${dstFile.canonicalPath}")
-                val dstUri = Uri.fromFile(dstFile)
-                val outs = contentResolver.openOutputStream(dstUri)
-                srcBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outs)
-                GalleryCommon.makeToast("保存图片成功: ")
-                GalleryCommon.app.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, dstUri))
-                outs?.close()
+            }
+            if (!findSameFile) {
+                val sendBoxFile = File("${SEND_BOX_DIR}${File.separatorChar}${mediaInfo.displayName}")
+                FileUtils.copyFile(sourceFile, sendBoxFile)
+                sendBoxFilePathCall(sendBoxFile.absolutePath)
             }
         }
-        //保存图片end
-
 
         /**
          * 获取图片后缀
          * */
-        @JvmStatic fun getFileExtensionFromUri(uri: Uri): String {
+        internal fun getFileExtensionFromUri(uri: Uri): String {
             var extension: String? = if (ContentResolver.SCHEME_CONTENT == uri.scheme) {
                 val mimeTypeMap = MimeTypeMap.getSingleton()
                 mimeTypeMap.getExtensionFromMimeType(GalleryCommon.app.contentResolver.getType(uri))
@@ -157,7 +69,7 @@ class FileUtils {
         /**
          * 获取图片mime-type
          * */
-        @JvmStatic fun getMimeTypeFromPath(path: String): String {
+        internal fun getMimeTypeFromPath(path: String): String {
             val singleton = MimeTypeMap.getSingleton()
             val extension = MimeTypeMap.getFileExtensionFromUrl(path)
             var mimeType: String? = null
@@ -170,7 +82,7 @@ class FileUtils {
             return mimeType!!
         }
 
-        @JvmStatic fun getMimeTypeFromUri(uri: Uri): String {
+        internal fun getMimeTypeFromUri(uri: Uri): String {
             var mimeType: String? = if (ContentResolver.SCHEME_CONTENT == uri.scheme) {
                 GalleryCommon.app.contentResolver.getType(uri)
             } else {
@@ -180,29 +92,6 @@ class FileUtils {
                 mimeType = "image/jpg"
             }
             return mimeType!!
-        }
-
-
-        private fun ioCopyFile(insCall: () -> InputStream?, outsCall: () -> OutputStream?, completeCall: () -> Unit) {
-            var ins: InputStream? = null
-            var outs: OutputStream? = null
-            try {
-                ins = insCall()
-                outs = outsCall()
-                if (ins != null && outs != null) {
-                    val bytes = ByteArray(1024)
-                    var i: Int
-                    while (ins.read(bytes).also { i = it } != -1) {
-                        outs.write(bytes, 0, i)
-                    }
-                }
-                completeCall()
-            } catch (e: Exception) {
-                d("ioCopyFile ${e.fillInStackTrace()}")
-            } finally {
-                ins?.close()
-                outs?.close()
-            }
         }
     }
 }

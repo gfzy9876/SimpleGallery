@@ -7,4 +7,4 @@ import pers.zy.gallerylib.model.MediaInfo
  * author zy
  * Have a nice day :)
  **/
-class GalleryMediaInfoFinishEvent(val result: List<MediaInfo>)
+class GalleryMediaInfoFinishEvent

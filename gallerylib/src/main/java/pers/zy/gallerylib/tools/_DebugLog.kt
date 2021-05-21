@@ -11,19 +11,19 @@ import pers.zy.gallerylib.BuildConfig
 
 private const val TAG = "ZGalleryModel"
 
-fun d(msg: String) {
+internal fun d(msg: String) {
     if (BuildConfig.DEBUG) {
         Log.d(TAG, msg)
     }
 }
 
-fun w(msg: String) {
+internal fun w(msg: String) {
     if (BuildConfig.DEBUG) {
         Log.w(TAG, msg)
     }
 }
 
-fun e(msg: String) {
+internal fun e(msg: String) {
     if (BuildConfig.DEBUG) {
         Log.e(TAG, msg)
     }

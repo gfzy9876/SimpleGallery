@@ -1,6 +1,7 @@
 package pers.zy.gallerymodel
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -9,7 +10,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import pers.zy.apt_annotation.MediaInfoReceived
 import pers.zy.gallerylib.ui.MediaInfoDispatcher
 import pers.zy.gallerylib.model.MediaInfo
-import pers.zy.gallerylib.tools.d
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,10 +50,12 @@ class MainActivity : AppCompatActivity() {
     fun onMediaInfoReceived(asd: List<MediaInfo>) {
         val gson = Gson()
         asd.forEach {
-            d("onMediaInfoReceived ${gson.toJson(it)}")
+            Log.d("GFZY", "onMediaInfoReceived ${gson.toJson(it)}")
         }
+        val realPath = asd[0].realPath
         Glide.with(this)
-            .load(asd[0].realPath)
+            .load(realPath)
             .into(iv_test)
+
     }
 }

@@ -59,7 +59,6 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         const val COLUMN_DISPLAY_NAME = MediaStore.Files.FileColumns.DISPLAY_NAME //文件名
         const val COLUMN_BUCKET_ID = "bucket_id" //当前所在文件夹id
         const val COLUMN_DURATION = "duration" //时间
-        const val COLUMN_THUMB_DATA = MediaStore.Video.Thumbnails.DATA //缩略图绝对路径, targetSdk 29失效
 
         /**
          * sort
