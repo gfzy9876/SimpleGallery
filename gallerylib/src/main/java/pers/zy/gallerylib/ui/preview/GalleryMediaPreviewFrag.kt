@@ -59,42 +59,19 @@ class GalleryMediaPreviewFrag : Fragment() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        //TODO:ZY 关于视频播放各种case处理
-    }
-
     private fun bindMediaTypeImage() {
-        binding.ivPlayVideo.visibility = View.GONE
-        binding.ivPlayVideo.setOnClickListener(null)
         bindIvPreview()
+        binding.ivPreview.isZoomable = true
     }
 
     private fun bindMediaTypeVideo() {
-        binding.ivPlayVideo.visibility = View.VISIBLE
-        binding.ivPlayVideo.setOnClickListener {
-            //TODO:ZY 播放视频
-        }
         bindIvPreview()
+        binding.ivPreview.isZoomable = false
     }
 
     private fun bindIvPreview() {
         Glide.with(this)
             .load(mediaInfo.contentUriPath)
             .into(binding.ivPreview)
-
-        //TODO:ZY 超大图处理
-//        Glide.with(this)
-//            .load(mediaInfo.contentUriPath)
-//            .into(object : CustomViewTarget<ImageView, Drawable>(binding.ivPreview) {
-//                override fun onLoadFailed(errorDrawable: Drawable?) {}
-//                override fun onResourceCleared(placeholder: Drawable?) {}
-//                override fun onResourceReady(
-//                    resource: Drawable,
-//                    transition: Transition<in Drawable>?
-//                ) {
-//                    binding.ivPreview.setImageDrawable(resource)
-//                }
-//            })
     }
 }

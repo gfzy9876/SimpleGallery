@@ -27,6 +27,8 @@ object GalleryCommon {
         return height
     }
 
+    internal fun getScreenWidth(): Int = app.resources.displayMetrics.widthPixels
+
     internal fun getScreenHeight(): Int = app.resources.displayMetrics.heightPixels
 
     internal fun lessThanAndroidQ(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
