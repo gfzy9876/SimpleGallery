@@ -37,15 +37,13 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                groupId = 'pers.zy.gallerymodel'
+                groupId = 'pers.zy.simplegallery'
                 artifactId = 'gallerylib'
-//                version = '1.0.0.beta4'
                 from components.release
             }
             debug(MavenPublication) {
-                groupId = 'pers.zy.gallerymodel'
+                groupId = 'pers.zy.simplegallery'
                 artifactId = 'gallerylib'
-//                version = '1.0.0.beta4'
                 from components.debug
             }
         }

@@ -12,7 +12,7 @@ afterEvaluate {
     publishing {
         publications {
             maven(MavenPublication) {
-                groupId = 'pers.zy.gallerymodel'
+                groupId = 'pers.zy.simplegallery'
                 artifactId = 'apt-processor'
 //                version = '1.0.0.beta4'
                 from components.java
