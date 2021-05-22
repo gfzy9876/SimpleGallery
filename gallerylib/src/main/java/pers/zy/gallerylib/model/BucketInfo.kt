@@ -13,14 +13,12 @@ class BucketInfo(
     var id: Long,
     val displayName: String,
     var count: Int,
-    val previewRealPath: String,
     val previewContentUri: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readLong(),
         parcel.readString()!!,
         parcel.readInt(),
-        parcel.readString()!!,
         parcel.readString()!!
     )
 
@@ -28,7 +26,6 @@ class BucketInfo(
         parcel.writeLong(id)
         parcel.writeString(displayName)
         parcel.writeInt(count)
-        parcel.writeString(previewRealPath)
         parcel.writeString(previewContentUri)
     }
 
@@ -56,10 +53,6 @@ class BucketInfo(
         } else {
             false
         }
-    }
-
-    override fun toString(): String {
-        return "BucketInfo(id=$id, displayName='$displayName', count=$count, previewRealPath='$previewRealPath', previewContentUri='$previewContentUri')"
     }
 
 

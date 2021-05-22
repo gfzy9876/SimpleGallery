@@ -15,6 +15,8 @@ import pers.zy.gallerylib.config.MediaInfoConfig
 import pers.zy.gallerylib.tools.GalleryCommon
 import pers.zy.gallerylib.model.MediaInfo
 import pers.zy.gallerylib.model.BucketInfo
+import pers.zy.gallerylib.tools.d
+import java.io.File
 
 /**
  * date: 2020/6/10   time: 7:09 PM
@@ -55,15 +57,28 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         const val COLUMN_WIDTH = MediaStore.Files.FileColumns.WIDTH //宽
         const val COLUMN_HEIGHT = MediaStore.Files.FileColumns.HEIGHT //高
         const val COLUMN_SIZE = MediaStore.Files.FileColumns.SIZE //大小
-        const val COLUMN_BUCKET_DISPLAY_NAME = "bucket_display_name" //当前所在文件夹名
         const val COLUMN_DISPLAY_NAME = MediaStore.Files.FileColumns.DISPLAY_NAME //文件名
-        const val COLUMN_BUCKET_ID = "bucket_id" //当前所在文件夹id
-        const val COLUMN_DURATION = "duration" //时间
+
+        val COLUMN_BUCKET_DISPLAY_NAME = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {//当前所在文件夹名
+            MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME
+        } else {
+            "bucket_display_name"
+        }
+        val COLUMN_BUCKET_ID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {//当前所在文件夹id
+            MediaStore.Files.FileColumns.BUCKET_ID
+        } else {
+            "bucket_id"
+        }
+        val COLUMN_DURATION = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {//时间
+            MediaStore.Files.FileColumns.DURATION
+        } else {
+            "duration"
+        }
 
         /**
          * sort
          * */
-        const val DEFAULT_SORT = "${MediaStore.Files.FileColumns._ID} DESC"
+        const val DEFAULT_SORT = "$COLUMN_ID DESC"
     }
 
     init {
@@ -106,8 +121,9 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
                 cursor?.let { c ->
                     if (!c.moveToFirst()) return@let
                     do {
-                        val mediaInfo = createMediaInfo(c)
-                        resultList.add(mediaInfo)
+                        createMediaInfo(c)?.let {
+                            resultList.add(it)
+                        }
                     } while (c.moveToNext())
                     c.close()
                 }
@@ -213,7 +229,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         }}"
     }
 
-    private fun createMediaInfo(c: Cursor): MediaInfo {
+    private fun createMediaInfo(c: Cursor): MediaInfo? {
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val realPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val contentUriPath = createContentPathUri(id).toString()
@@ -226,8 +242,12 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
         val size = c.getLong(c.getColumnIndex(COLUMN_SIZE))
         val displayName = c.getString(c.getColumnIndex(COLUMN_DISPLAY_NAME))
         val duration = c.getLong(c.getColumnIndex(COLUMN_DURATION))
-        //TODO:ZY 考虑是否需要加上缩略图
-        return MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, duration)
+        val file = File(realPath)
+        return if (file.exists() && file.length() > 0) {
+            MediaInfo(id, mediaType, realPath, contentUriPath, sendBoxPath, mimeType, size, displayName, width, height, duration)
+        } else {
+            null
+        }
     }
 
     /**
@@ -275,7 +295,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     private fun getBucketProjection(): Array<String> = if (GalleryCommon.lessThanAndroidQ()) {
         arrayOf(
             COLUMN_ID,
-            COLUMN_DATA,
+//            COLUMN_DATA,
             COLUMN_BUCKET_ID,
             COLUMN_BUCKET_DISPLAY_NAME,
             COLUMN_MIME_TYPE,
@@ -284,7 +304,7 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     } else {
         arrayOf(
             COLUMN_ID,
-            COLUMN_DATA,
+//            COLUMN_DATA,
             COLUMN_BUCKET_ID,
             COLUMN_BUCKET_DISPLAY_NAME,
             COLUMN_MIME_TYPE
@@ -400,22 +420,22 @@ class GalleryMediaLoader(lifecycleOwner: LifecycleOwner) : CoroutineScope by Mai
     private fun createBucket(c: Cursor): BucketInfo {
         val bucketId = c.getLong(c.getColumnIndex(COLUMN_BUCKET_ID))
         val bucketDisplayName = c.getString(c.getColumnIndex(COLUMN_BUCKET_DISPLAY_NAME)) ?: "其他"
-        val path = c.getString(c.getColumnIndex(COLUMN_DATA))
+//        val path = c.getString(c.getColumnIndex(COLUMN_DATA))
         val id = c.getLong(c.getColumnIndex(COLUMN_ID))
         val contentUriPath = createContentPathUri(id).toString()
         return if (GalleryCommon.lessThanAndroidQ()) {
             val count = c.getInt(c.getColumnIndex("count"))
-            BucketInfo(bucketId, bucketDisplayName, count, path, contentUriPath)
+            BucketInfo(bucketId, bucketDisplayName, count, contentUriPath)
         } else {
-            BucketInfo(bucketId, bucketDisplayName, 0, path, contentUriPath)
+            BucketInfo(bucketId, bucketDisplayName, 0, contentUriPath)
         }
     }
 
     private fun createNonSelectiveBucket(c: Cursor): BucketInfo {
         val sumPreviewId = c.getLong(c.getColumnIndex(COLUMN_ID))
-        val sumPreviewRealPath = c.getString(c.getColumnIndex(COLUMN_DATA))
+//        val sumPreviewRealPath = c.getString(c.getColumnIndex(COLUMN_DATA))
         val sumPreviewContentUri = createContentPathUri(sumPreviewId)
-        return BucketInfo(BUCKET_ID_NON_SELECTIVE, "所有", 0, sumPreviewRealPath, sumPreviewContentUri.toString())
+        return BucketInfo(BUCKET_ID_NON_SELECTIVE, "所有", 0, sumPreviewContentUri.toString())
     }
 
     private fun getGifLimitSelection(): String {

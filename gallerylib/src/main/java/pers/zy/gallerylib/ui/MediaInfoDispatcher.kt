@@ -66,6 +66,11 @@ class MediaInfoDispatcher {
         return this
     }
 
+    fun supportGIF(showGif: Boolean): MediaInfoDispatcher {
+        MediaInfoConfig.showGif = showGif
+        return this
+    }
+
     fun start(context: Context, target: Any) {
         MediaInfoConfig.targetName = target::class.java.simpleName
         MediaInfoDispatcher.start(context, target)
